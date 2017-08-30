@@ -17,11 +17,11 @@ function apt-package-installed () {
 
 function install_module () {
   module=$1
-  if eval "gab__check-$module"; then
+  if eval "check-$module"; then
     echo "$module already installed"
   else
     echo "Installing $module"
-    eval "gab__install-$module"
+    eval "install-$module"
   fi
 }
 

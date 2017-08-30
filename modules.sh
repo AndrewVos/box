@@ -1,26 +1,26 @@
-function gab__check-git () {
+function check-git () {
   result=`apt-package-installed "git"`
   return $result
 }
-function gab__install-git () {
+function install-git () {
   sudo apt install git
 }
 MODULES+=(git)
 
-function gab__check-nim () {
+function check-nim () {
   result=`apt-package-installed "nim"`
   return $result
 }
-function gab__install-nim () {
+function install-nim () {
   sudo apt install nim
 }
 MODULES+=(nim)
 
-function gab__check-enpass () {
+function check-enpass () {
   installed=`apt-package-installed "enpass"`
   return $installed
 }
-function gab__install-enpass () {
+function install-enpass () {
   sudo echo "deb http://repo.sinew.in/ stable main" > /etc/apt/sources.list.d/enpass.list
   wget -O - https://dl.sinew.in/keys/enpass-linux.key | sudo apt-key add -
   sudo apt-get update
@@ -28,13 +28,13 @@ function gab__install-enpass () {
 }
 MODULES+=(enpass)
 
-function gab__check-vim () {
+function check-vim () {
   if [ -f /usr/local/bin/vim ]; then
     return 0
   fi
   return 1
 }
-function gab__install-vim () {
+function install-vim () {
   sudo apt install xorg-dev
   sudo apt install ncurses-dev
 
@@ -48,14 +48,14 @@ function gab__install-vim () {
 }
 MODULES+=(vim)
 
-function gab__check-slink () {
+function check-slink () {
   if [ -f /usr/local/bin/slink ]; then
     return 0
   else
     return 1
   fi
 }
-function gab__install-slink () {
+function install-slink () {
   temp_dir=`mktemp --directory`
   cd $temp_dir
 
@@ -68,14 +68,14 @@ function gab__install-slink () {
 }
 MODULES+=(slink)
 
-function gab__check-dotfiles () {
+function check-dotfiles () {
   if [ -d $HOME/dotfiles ]; then
     return 0
   else
     return 1
   fi
 }
-function gab__install-dotfiles () {
+function install-dotfiles () {
   cd $HOME
   git clone https://github.com/AndrewVos/dotfiles.git
   cd dotfiles
@@ -84,14 +84,14 @@ function gab__install-dotfiles () {
 }
 MODULES+=(dotfiles)
 
-function gab__check-vimfiles () {
+function check-vimfiles () {
   if [ -d $HOME/vimfiles ]; then
     return 0
   else
     return 1
   fi
 }
-function gab__install-vimfiles () {
+function install-vimfiles () {
   cd $HOME
   git clone https://github.com/AndrewVos/vimfiles.git
   cd vimfiles
