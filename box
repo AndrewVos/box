@@ -68,7 +68,7 @@ function apt-package () {
   fi
 }
 
-function custom-package () {
+function package () {
   PACKAGE=$1
 
   if ! function-exists "verify-$PACKAGE"; then

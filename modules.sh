@@ -38,8 +38,6 @@ function install-slink () {
   cd slink
   nim compile -d:release slink.nim
   sudo mv slink /usr/local/bin/slink
-
-  cd -
 }
 
 apt-package "git"
@@ -48,10 +46,9 @@ apt-package "enpass"
 golang "go1.9"
 go-package "github.com/AndrewVos/pwompt"
 
-custom-package "vim"
-custom-package "slink"
+package "vim"
+package "slink"
 
-github "https://github.com/AndrewVos/box" "$HOME/box"
 github "https://github.com/AndrewVos/vimfiles" "$HOME/vimfiles"
 if did-install; then
   cd $HOME/vimfiles && ./install.sh
