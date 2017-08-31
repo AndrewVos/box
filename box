@@ -3,29 +3,166 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-MODULES=()
-source modules.sh
+BOX_ACTION_NONE="none"
+BOX_ACTION_INSTALL="install"
+BOX_ACTION_UPGRADE="upgrade"
+
+APT_STATUS_MISSING="missing"
+APT_STATUS_OUTDATED="outdated"
+APT_STATUS_LATEST="latest"
+
+INSTALL_CACHE=$(mktemp)
+UPGRADE_CACHE=$(mktemp)
 
 function apt-package-installed () {
   PACKAGE=$1
-  PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $PACKAGE|grep "install ok installed")
-  if [ "" == "$PKG_OK" ]; then
+
+  if [ ! -s $INSTALL_CACHE ]; then
+    dpkg --get-selections > $INSTALL_CACHE
+  fi
+
+  if [ ! -s $UPGRADE_CACHE ]; then
+    sudo apt-get -s upgrade > $UPGRADE_CACHE
+  fi
+
+  if ! cat $INSTALL_CACHE | grep -E "^$PACKAGE\\s+install$" > /dev/null; then
+    APT_STATUS=$APT_STATUS_MISSING
+    return 0
+  fi
+
+  if cat $UPGRADE_CACHE | grep -E '^Inst ' | cut -d ' ' -f 2 | grep -E "^$PACKAGE"; then
+    APT_STATUS=$APT_STATUS_OUTDATED
+    return 0
+  fi
+
+  APT_STATUS=$APT_STATUS_LATEST
+}
+
+function function-exists() {
+  declare -f -F $1 > /dev/null
+  return $?
+}
+
+function apt-package () {
+  PACKAGE=$1
+
+  apt-package-installed "$PACKAGE"
+
+  if [ $APT_STATUS = $APT_STATUS_LATEST ]; then
+    echo "$PACKAGE -> $APT_STATUS_LATEST"
+    BOX_ACTION=$BOX_ACTION_NONE
+  else
+    if [ $APT_STATUS = $APT_STATUS_OUTDATED ]; then
+      echo "$PACKAGE -> $APT_STATUS_OUTDATED"
+      sudo apt-get install "$PACKAGE"
+      BOX_ACTION=$BOX_ACTION_UPGRADE
+    elif [ $APT_STATUS = $APT_STATUS_MISSING ]; then
+      if function-exists "preinstall-$PACKAGE"; then
+        echo "  - preinstalling $PACKAGE"
+        eval "preinstall-$PACKAGE"
+      fi
+      echo "  - installing $PACKAGE"
+      sudo apt-get install "$PACKAGE"
+      BOX_ACTION_INSTALL="install"
+    fi
+  fi
+}
+
+function custom-package () {
+  PACKAGE=$1
+
+  if ! function-exists "verify-$PACKAGE"; then
+    echo "Expected a verification function called 'verify-$PACKAGE' to exist."
+    exit 1
+  fi
+
+  if ! function-exists "install-$PACKAGE"; then
+    echo "Expected an install function called 'install-$PACKAGE' to exist."
+    exit 1
+  fi
+
+  if eval "verify-$PACKAGE"; then
+    echo "$PACKAGE -> $APT_STATUS_LATEST"
+    BOX_ACTION_NONE="none"
+  else
+    eval "install-$PACKAGE"
+    BOX_ACTION=$BOX_ACTION_INSTALL
+  fi
+}
+
+function golang () {
+  VERSION=$1
+  if [ -f "/usr/local/go/bin/go" ]; then
+    CURRENT_VERSION=$(go version | cut -d ' ' -f 3)
+
+    if [[ $CURRENT_VERSION = $VERSION ]]; then
+      echo "golang $VERSION -> $APT_STATUS_LATEST"
+      BOX_ACTION=$BOX_ACTION_NONE
+    else
+      echo "  - asked for go version $VERSION but $CURRENT_VERSION is installed"
+      exit 1
+    fi
+  else
+    echo "  - installing golang version $VERSION"
+    temp_dir=`mktemp --directory`
+    cd $temp_dir
+    wget "https://storage.googleapis.com/golang/$VERSION.linux-amd64.tar.gz"
+    sudo tar -C /usr/local -xzf "$VERSION.linux-amd64.tar.gz"
+    BOX_ACTION_INSTALL="install"
+  fi
+}
+
+function go-package () {
+  PACKAGE=$1
+  if go list "$PACKAGE" > /dev/null; then
+    echo "$PACKAGE -> $APT_STATUS_LATEST"
+    BOX_ACTION=$BOX_ACTION_NONE
+  else
+    echo "$PACKAGE -> $APT_STATUS_MISSING"
+    echo "  - installing $PACKAGE"
+    go get "$PACKAGE"
+    BOX_ACTION=$BOX_ACTION_INSTALL
+  fi
+}
+
+function github () {
+  REPOSITORY=$1
+  DESTINATION=$2
+
+  if [ -d "$DESTINATION" ]; then
+    cd "$DESTINATION"
+    git fetch
+
+    if [ $(git rev-parse HEAD) == $(git rev-parse @{u}) ]; then
+      echo "$REPOSITORY -> $APT_STATUS_LATEST"
+      BOX_ACTION=$BOX_ACTION_NONE
+    else
+      echo "$REPOSITORY -> $APT_STATUS_OUTDATED"
+      git pull
+      BOX_ACTION=$BOX_ACTION_UPGRADE
+    fi
+  else
+    echo "$REPOSITORY -> $APT_STATUS_MISSING"
+    git clone "$REPOSITORY" "$DESTINATION"
+    BOX_ACTION=$BOX_ACTION_INSTALL
+  fi
+}
+
+function did-install () {
+  if [ $BOX_ACTION = $BOX_ACTION_INSTALL ]; then
+    return 0
+  else
     return 1
   fi
-  return 0
 }
 
-function install_module () {
-  module=$1
-  if eval "check-$module"; then
-    echo "$module already installed"
+function did-upgrade () {
+  if [ $BOX_ACTION = $BOX_ACTION_UPGRADE ]; then
+    return 0
   else
-    echo "Installing $module"
-    eval "install-$module"
+    return 1
   fi
 }
 
-for module in ${MODULES[@]};
-do
-  install_module $module
-done
+MODULES=$1
+source $MODULES

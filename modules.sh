@@ -1,34 +1,10 @@
-function check-git () {
-  result=`apt-package-installed "git"`
-  return $result
-}
-function install-git () {
-  sudo apt install git
-}
-MODULES+=(git)
-
-function check-nim () {
-  result=`apt-package-installed "nim"`
-  return $result
-}
-function install-nim () {
-  sudo apt install nim
-}
-MODULES+=(nim)
-
-function check-enpass () {
-  installed=`apt-package-installed "enpass"`
-  return $installed
-}
-function install-enpass () {
+function preinstall-enpass () {
   sudo echo "deb http://repo.sinew.in/ stable main" > /etc/apt/sources.list.d/enpass.list
   wget -O - https://dl.sinew.in/keys/enpass-linux.key | sudo apt-key add -
-  sudo apt-get update
-  sudo apt-get install enpass
+  sudo apt update
 }
-MODULES+=(enpass)
 
-function check-vim () {
+function verify-vim () {
   if [ -f /usr/local/bin/vim ]; then
     return 0
   fi
@@ -46,9 +22,8 @@ function install-vim () {
   make
   sudo make install
 }
-MODULES+=(vim)
 
-function check-slink () {
+function verify-slink () {
   if [ -f /usr/local/bin/slink ]; then
     return 0
   else
@@ -66,36 +41,23 @@ function install-slink () {
 
   cd -
 }
-MODULES+=(slink)
 
-function check-dotfiles () {
-  if [ -d $HOME/dotfiles ]; then
-    return 0
-  else
-    return 1
-  fi
-}
-function install-dotfiles () {
-  cd $HOME
-  git clone https://github.com/AndrewVos/dotfiles.git
-  cd dotfiles
-  slink --really
-  cd -
-}
-MODULES+=(dotfiles)
+apt-package "git"
+apt-package "nim"
+apt-package "enpass"
+golang "go1.9"
+go-package "github.com/AndrewVos/pwompt"
 
-function check-vimfiles () {
-  if [ -d $HOME/vimfiles ]; then
-    return 0
-  else
-    return 1
-  fi
-}
-function install-vimfiles () {
-  cd $HOME
-  git clone https://github.com/AndrewVos/vimfiles.git
-  cd vimfiles
-  ./install.sh
-  cd -
-}
-MODULES+=(vimfiles)
+custom-package "vim"
+custom-package "slink"
+
+github "https://github.com/AndrewVos/box" "$HOME/box"
+github "https://github.com/AndrewVos/vimfiles" "$HOME/vimfiles"
+if did-install; then
+  cd $HOME/vimfiles && ./install.sh
+fi
+
+github "https://github.com/AndrewVos/dotfiles" "$HOME/dotfiles"
+if did-install; then
+  cd $HOME/dotfiles && slink --really
+fi
