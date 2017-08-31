@@ -1,10 +1,4 @@
-function preinstall-enpass () {
-  sudo echo "deb http://repo.sinew.in/ stable main" > /etc/apt/sources.list.d/enpass.list
-  wget -O - https://dl.sinew.in/keys/enpass-linux.key | sudo apt-key add -
-  sudo apt update
-}
-
-function verify-vim () {
+function check-vim () {
   if [ -f /usr/local/bin/vim ]; then
     return 0
   fi
@@ -23,7 +17,7 @@ function install-vim () {
   sudo make install
 }
 
-function verify-slink () {
+function check-slink () {
   if [ -f /usr/local/bin/slink ]; then
     return 0
   else
@@ -40,21 +34,30 @@ function install-slink () {
   sudo mv slink /usr/local/bin/slink
 }
 
-apt-package "git"
-apt-package "nim"
-apt-package "enpass"
-golang "go1.9"
-go-package "github.com/AndrewVos/pwompt"
+satisfy apt "git"
+satisfy apt "nim"
 
-package "vim"
-package "slink"
+if ! check apt "enpass"; then
+  sudo echo "deb http://repo.sinew.in/ stable main" > /etc/apt/sources.list.d/enpass.list
+  wget -O - https://dl.sinew.in/keys/enpass-linux.key | sudo apt-key add -
+  sudo apt update
+fi
+satisfy apt "enpass"
 
-github "https://github.com/AndrewVos/vimfiles" "$HOME/vimfiles"
+satisfy golang "go1.9"
+satisfy go-package "github.com/AndrewVos/pwompt"
+
+satisfy package "vim"
+satisfy package "slink"
+
+satisfy github "https://github.com/AndrewVos/vimfiles" "$HOME/vimfiles"
 if did-install; then
   cd $HOME/vimfiles && ./install.sh
 fi
 
-github "https://github.com/AndrewVos/dotfiles" "$HOME/dotfiles"
+satisfy github "https://github.com/AndrewVos/dotfiles" "$HOME/dotfiles"
 if did-install; then
   cd $HOME/dotfiles && slink --really
 fi
+
+satisfy github "https://github.com/AndrewVos/box" "$HOME/box"

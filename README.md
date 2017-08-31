@@ -11,25 +11,25 @@ will be skipped.
 Install some apt packages:
 
 ```bash
-apt-package "git"
-apt-package "vim"
+satisfy apt "git"
+satisfy apt "vim"
 ```
 
 Run some preinstall tasks before installing an apt package:
 
 ```bash
-function preinstall-enpass () {
+if ! check apt "enpass"; then
   sudo echo "deb http://repo.sinew.in/ stable main" > /etc/apt/sources.list.d/enpass.list
   wget -O - https://dl.sinew.in/keys/enpass-linux.key | sudo apt-key add -
   sudo apt update
-}
-apt-package "enpass"
+fi
+satisfy apt "enpass"
 ```
 
 Run some command after install or upgrade:
 
 ```bash
-apt-package "vim"
+satisfy apt "vim"
 
 if did-install; then
   echo "wow cool"
@@ -43,13 +43,13 @@ fi
 Install a golang:
 
 ```bash
-golang "go1.9"
+satisfy golang "go1.9"
 ```
 
 Install a golang package:
 
 ```bash
-go-package "github.com/AndrewVos/pwompt"
+satisfy go-package "github.com/AndrewVos/pwompt"
 ```
 
 Install a custom package:
@@ -69,5 +69,16 @@ function install-vimfiles () {
   ./install.sh
 }
 
-custom-package "vim"
+package "vim"
+```
+
+Clone a github repository somewhere:
+
+```bash
+satisfy github "https://github.com/AndrewVos/vimfiles" "$HOME/vimfiles"
+
+if did-install; then
+  cd $HOME/vimfiles
+  ./install.sh
+fi
 ```
