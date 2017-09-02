@@ -77,6 +77,9 @@ function execute-function () {
   local IDENTIFIER=$(echo "$IDENTIFIER" | sed 's/^[^A-Za-z0-9]//')
   local IDENTIFIER=$(echo "$IDENTIFIER" | sed 's/[^A-Za-z0-9]/-/g')
 
+  local TEMP_DIR=`mktemp --directory`
+  cd "$TEMP_DIR"
+
   eval "$PREFIX-$IDENTIFIER"
 }
 

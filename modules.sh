@@ -1,9 +1,6 @@
 function install-vim () {
-  sudo apt install xorg-dev
-  sudo apt install ncurses-dev
+  sudo apt install xorg-dev ncurses-dev
 
-  temp_dir=`mktemp --directory`
-  cd $temp_dir
   git clone https://github.com/vim/vim.git --depth 1
   cd vim
   ./configure --enable-pythoninterp
@@ -13,9 +10,6 @@ function install-vim () {
 satisfy executable "vim"
 
 function install-slink () {
-  temp_dir=`mktemp --directory`
-  cd $temp_dir
-
   git clone https://github.com/AndrewVos/slink
   cd slink
   nim compile -d:release slink.nim
@@ -49,8 +43,6 @@ fi
 satisfy github "https://github.com/AndrewVos/box" "$HOME/box"
 
 function install-chruby () {
-  temp_dir=`mktemp --directory`
-  cd $temp_dir
   wget -O chruby-0.3.9.tar.gz https://github.com/postmodern/chruby/archive/v0.3.9.tar.gz
   tar -xzvf chruby-0.3.9.tar.gz
   cd chruby-0.3.9/
@@ -62,8 +54,6 @@ function install-chruby () {
 satisfy file "chruby" "/usr/local/share/chruby/chruby.sh"
 
 function install-ruby-install () {
-  temp_dir=`mktemp --directory`
-  cd $temp_dir
   wget -O ruby-install-0.6.1.tar.gz https://github.com/postmodern/ruby-install/archive/v0.6.1.tar.gz
   tar -xzvf ruby-install-0.6.1.tar.gz
   cd ruby-install-0.6.1/
