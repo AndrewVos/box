@@ -229,7 +229,7 @@ function satisfy-go-package () {
   fi
 }
 
-function satisfy-github () {
+function check-github () {
   local REPOSITORY=$1
   local DESTINATION=$2
 
@@ -238,17 +238,32 @@ function satisfy-github () {
     git fetch > /dev/null
 
     if [ $(git rev-parse HEAD) == $(git rev-parse @{u}) ]; then
-      echo "$REPOSITORY -> $BOX_STATUS_LATEST"
-      BOX_ACTION=$BOX_ACTION_NONE
+      BOX_STATUS=$BOX_STATUS_LATEST
     else
-      echo "$REPOSITORY -> $BOX_STATUS_OUTDATED"
-      git pull
-      BOX_ACTION=$BOX_ACTION_UPGRADE
+      BOX_STATUS=$BOX_STATUS_OUTDATED
     fi
   else
-    echo "$REPOSITORY -> $BOX_STATUS_MISSING"
+    BOX_STATUS=$BOX_STATUS_MISSING
+  fi
+}
+
+function satisfy-github () {
+  local REPOSITORY=$1
+  local DESTINATION=$2
+
+  check-github "$REPOSITORY" "$DESTINATION"
+
+  echo "$REPOSITORY -> $BOX_STATUS"
+
+  if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     git clone "$REPOSITORY" "$DESTINATION"
     BOX_ACTION=$BOX_ACTION_INSTALL
+  elif [[ $BOX_STATUS = $BOX_STATUS_OUTDATED ]]; then
+    cd "$DESTINATION"
+    git pull
+    BOX_ACTION=$BOX_ACTION_UPGRADE
+  else
+    BOX_ACTION=$BOX_ACTION_NONE
   fi
 }
 
