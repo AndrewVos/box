@@ -16,13 +16,13 @@ INSTALL_CACHE=$(mktemp)
 UPGRADE_CACHE=$(mktemp)
 
 function satisfy () {
-  TYPE=$1
+  local TYPE=$1
   shift
   eval satisfy-$TYPE "$@"
 }
 
 function check () {
-  TYPE=$1
+  local TYPE=$1
   shift
   eval check-$TYPE "$@"
 
@@ -33,7 +33,7 @@ function check () {
 }
 
 function must-install () {
-  TYPE=$1
+  local TYPE=$1
   shift
   eval check-$TYPE "$@"
 
@@ -44,7 +44,7 @@ function must-install () {
 }
 
 function must-upgrade () {
-  TYPE=$1
+  local TYPE=$1
   shift
   eval check-$TYPE "$@"
 
@@ -70,8 +70,18 @@ function did-upgrade () {
   fi
 }
 
+function execute-function () {
+  local PREFIX=$1
+  local IDENTIFIER=$2
+
+  local IDENTIFIER=$(echo "$IDENTIFIER" | sed 's/^[^A-Za-z0-9]//')
+  local IDENTIFIER=$(echo "$IDENTIFIER" | sed 's/[^A-Za-z0-9]/-/g')
+
+  eval "$PREFIX-$IDENTIFIER"
+}
+
 function check-apt () {
-  PACKAGE=$1
+  local PACKAGE=$1
 
   if [ ! -s $INSTALL_CACHE ]; then
     dpkg --get-selections > $INSTALL_CACHE
@@ -91,15 +101,15 @@ function check-apt () {
 }
 
 function satisfy-apt () {
-  PACKAGE=$1
+  local PACKAGE=$1
 
   check-apt "$PACKAGE"
 
+  echo "$PACKAGE -> $BOX_STATUS"
+
   if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
-    echo "$PACKAGE -> $BOX_STATUS_LATEST"
     BOX_ACTION=$BOX_ACTION_NONE
   else
-    echo "$PACKAGE -> $BOX_STATUS"
     sudo apt-get install "$PACKAGE"
 
     if [ $BOX_STATUS = $BOX_STATUS_OUTDATED ]; then
@@ -110,23 +120,11 @@ function satisfy-apt () {
   fi
 }
 
-function satisfy-package () {
-  PACKAGE=$1
-
-  if eval "check-$PACKAGE"; then
-    echo "$PACKAGE -> $BOX_STATUS_LATEST"
-    BOX_ACTION_NONE="none"
-  else
-    eval "install-$PACKAGE"
-    BOX_ACTION=$BOX_ACTION_INSTALL
-  fi
-}
-
 function check-golang () {
-  VERSION=$1
+  local VERSION=$1
 
   if [ -f "/usr/local/go/bin/go" ]; then
-    CURRENT_VERSION=$(go version | cut -d ' ' -f 3)
+    local CURRENT_VERSION=$(go version | cut -d ' ' -f 3)
 
     if [[ $CURRENT_VERSION = $VERSION ]]; then
       BOX_STATUS=$BOX_STATUS_LATEST
@@ -139,39 +137,98 @@ function check-golang () {
 }
 
 function satisfy-golang () {
-  VERSION=$1
-  if check-golang "$VERSION"; then
-    echo "golang $VERSION -> $BOX_STATUS_LATEST"
-    BOX_ACTION=$BOX_ACTION_NONE
-  else
-    echo "golang $VERSION -> $BOX_STATUS"
-    if [ $BOX_STATUS = $BOX_STATUS_MISMATCH ]; then
-      exit 1
-    elif [ $BOX_STATUS = $BOX_STATUS_MISSING ]; then
-      temp_dir=`mktemp --directory`
-      cd $temp_dir
-      wget "https://storage.googleapis.com/golang/$VERSION.linux-amd64.tar.gz"
-      sudo tar -C /usr/local -xzf "$VERSION.linux-amd64.tar.gz"
-      BOX_ACTION=$BOX_ACTION_INSTALL
-    fi
-  fi
-}
+  local VERSION=$1
 
-function satisfy-go-package () {
-  PACKAGE=$1
-  if go list "$PACKAGE" > /dev/null; then
-    echo "$PACKAGE -> $BOX_STATUS_LATEST"
+  check-golang "$VERSION"
+
+  echo "golang $VERSION -> $BOX_STATUS"
+
+  if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
+  elif [[ $BOX_STATUS = $BOX_STATUS_MISMATCH ]]; then
+    exit 1
   else
-    echo "$PACKAGE -> $BOX_STATUS_MISSING"
-    go get "$PACKAGE"
+    local temp_dir=`mktemp --directory`
+    cd $temp_dir
+    wget "https://storage.googleapis.com/golang/$VERSION.linux-amd64.tar.gz"
+    sudo tar -C /usr/local -xzf "$VERSION.linux-amd64.tar.gz"
     BOX_ACTION=$BOX_ACTION_INSTALL
   fi
 }
 
+function satisfy-executable () {
+  local EXECUTABLE=$1
+  check-executable "$EXECUTABLE"
+
+  echo "$EXECUTABLE -> $BOX_STATUS"
+
+  if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+    execute-function "install" "$EXECUTABLE"
+  fi
+}
+
+function check-executable () {
+  local EXECUTABLE=$1
+
+  if hash $EXECUTABLE 2>/dev/null; then
+    BOX_STATUS=$BOX_STATUS_LATEST
+  else
+    BOX_STATUS=$BOX_STATUS_MISSING
+  fi
+}
+
+function satisfy-file () {
+  local NAME=$1
+  local FILE=$2
+
+  check-file "$NAME" "$FILE"
+
+  echo "$NAME -> $BOX_STATUS"
+
+  if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+    execute-function "install" "$NAME"
+  fi
+}
+
+function check-file () {
+  local NAME=$1
+  local FILE=$2
+
+  if [[ -f $FILE ]]; then
+    BOX_STATUS=$BOX_STATUS_LATEST
+  else
+    BOX_STATUS=$BOX_STATUS_MISSING
+  fi
+}
+
+function check-go-package () {
+  local PACKAGE=$1
+
+  if go list "$PACKAGE" > /dev/null; then
+    BOX_STATUS=$BOX_STATUS_LATEST
+  else
+    BOX_STATUS=$BOX_STATUS_MISSING
+  fi
+}
+
+function satisfy-go-package () {
+  local PACKAGE=$1
+
+  check-go-package "$PACKAGE"
+
+  echo "$PACKAGE -> $BOX_STATUS"
+
+  if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+    go get "$PACKAGE"
+    BOX_ACTION=$BOX_ACTION_INSTALL
+  else
+    BOX_ACTION=$BOX_ACTION_NONE
+  fi
+}
+
 function satisfy-github () {
-  REPOSITORY=$1
-  DESTINATION=$2
+  local REPOSITORY=$1
+  local DESTINATION=$2
 
   if [ -d "$DESTINATION" ]; then
     cd "$DESTINATION"
@@ -192,5 +249,5 @@ function satisfy-github () {
   fi
 }
 
-MODULES=$1
-source $MODULES
+BOX_MODULES=$1
+source $BOX_MODULES

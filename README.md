@@ -52,26 +52,6 @@ Install a golang package:
 satisfy go-package "github.com/AndrewVos/pwompt"
 ```
 
-Install a custom package:
-
-```bash
-function verify-vimfiles () {
-  if [ -d $HOME/vimfiles ]; then
-    return 0
-  else
-    return 1
-  fi
-}
-function install-vimfiles () {
-  cd $HOME
-  git clone https://github.com/AndrewVos/vimfiles.git
-  cd vimfiles
-  ./install.sh
-}
-
-package "vim"
-```
-
 Clone a github repository somewhere:
 
 ```bash
@@ -81,4 +61,22 @@ if did-install; then
   cd $HOME/vimfiles
   ./install.sh
 fi
+```
+
+Install a file:
+
+```bash
+function install-file () {
+  cp file /my/file
+}
+satisfy file "file" "/my/file"
+```
+
+Install an executable:
+
+```bash
+function install-thing () {
+  sudo wget -O /usr/bin/thing https://example.org/thing
+}
+satisfy executable "thing"
 ```

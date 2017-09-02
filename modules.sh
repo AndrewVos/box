@@ -1,9 +1,3 @@
-function check-vim () {
-  if [ -f /usr/local/bin/vim ]; then
-    return 0
-  fi
-  return 1
-}
 function install-vim () {
   sudo apt install xorg-dev
   sudo apt install ncurses-dev
@@ -16,14 +10,8 @@ function install-vim () {
   make
   sudo make install
 }
+satisfy executable "vim"
 
-function check-slink () {
-  if [ -f /usr/local/bin/slink ]; then
-    return 0
-  else
-    return 1
-  fi
-}
 function install-slink () {
   temp_dir=`mktemp --directory`
   cd $temp_dir
@@ -33,6 +21,7 @@ function install-slink () {
   nim compile -d:release slink.nim
   sudo mv slink /usr/local/bin/slink
 }
+satisfy file "slink" "/usr/local/bin/slink"
 
 satisfy apt "git"
 satisfy apt "nim"
@@ -47,9 +36,6 @@ satisfy apt "enpass"
 satisfy golang "go1.9"
 satisfy go-package "github.com/AndrewVos/pwompt"
 
-satisfy package "vim"
-satisfy package "slink"
-
 satisfy github "https://github.com/AndrewVos/vimfiles" "$HOME/vimfiles"
 if did-install; then
   cd $HOME/vimfiles && ./install.sh
@@ -61,3 +47,31 @@ if did-install; then
 fi
 
 satisfy github "https://github.com/AndrewVos/box" "$HOME/box"
+
+function install-chruby () {
+  temp_dir=`mktemp --directory`
+  cd $temp_dir
+  wget -O chruby-0.3.9.tar.gz https://github.com/postmodern/chruby/archive/v0.3.9.tar.gz
+  tar -xzvf chruby-0.3.9.tar.gz
+  cd chruby-0.3.9/
+  sudo make install
+  set +u
+  . /usr/local/share/chruby/chruby.sh
+  set -u
+}
+satisfy file "chruby" "/usr/local/share/chruby/chruby.sh"
+
+function install-ruby-install () {
+  temp_dir=`mktemp --directory`
+  cd $temp_dir
+  wget -O ruby-install-0.6.1.tar.gz https://github.com/postmodern/ruby-install/archive/v0.6.1.tar.gz
+  tar -xzvf ruby-install-0.6.1.tar.gz
+  cd ruby-install-0.6.1/
+  sudo make install
+}
+satisfy executable "ruby-install"
+
+function install-ruby-2-3-0 () {
+  ruby-install ruby-2.3.0
+}
+satisfy file "ruby-2.3.0" "$HOME/.rubies/ruby-2.3.0/bin/ruby"
