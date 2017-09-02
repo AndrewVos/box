@@ -6,6 +6,13 @@ Run ```box your-package-file``` to install your
 packages. Packages that are already installed
 will be skipped.
 
+## Work in progress
+
+This is very much a work in progress. It will be fairly stable
+but be warned, things may change.
+
+Contributions or bug reports will be very much appreciated!
+
 ## Example:
 
 Install some apt packages:
