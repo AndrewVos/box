@@ -235,7 +235,7 @@ function check-github () {
 
   if [ -d "$DESTINATION" ]; then
     cd "$DESTINATION"
-    git fetch > /dev/null
+    git fetch --quiet > /dev/null
 
     if [ $(git rev-parse HEAD) == $(git rev-parse @{u}) ]; then
       BOX_STATUS=$BOX_STATUS_LATEST
