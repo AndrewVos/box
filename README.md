@@ -13,8 +13,19 @@ but be warned, things may change.
 
 Contributions or bug reports will be very much appreciated!
 
-* auto-gen TOC:
-{:toc}
+- [box](#box)
+  - [Work in progress](#work-in-progress)
+  - [Usage](#usage)
+  - [Dependency examples](#dependency-examples)
+    - [APT packages](#apt-packages)
+    - [Golang](#golang)
+    - [Golang packages](#golang-packages)
+    - [Github repositories](#github-repositories)
+    - [Files](#files)
+    - [Executables](#executables)
+  - [Hooks](#hooks)
+    - [Preinstall hooks](#preinstall-hooks)
+    - [Postinstall hooks](#postinstall-hooks)
 
 ## Usage
 
