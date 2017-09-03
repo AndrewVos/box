@@ -2,9 +2,6 @@
 
 Manage your machine configuration in a simple bash DSL.
 
-Run ```box your-package-file``` to install your packages.
-Packages that are already installed will be skipped.
-
 WARNING: This is very much a work in progress.
 It will be fairly stable but be warned, things may change.
 
@@ -26,7 +23,9 @@ Contributions or bug reports will be very much appreciated!
 
 ## Installation
 
-You can bootstrap box into your box configuration script.
+You can bootstrap box right into your configuration script.
+
+Place this at the top of the file:
 
 ```bash
 function bootstrap-box () {
@@ -45,13 +44,14 @@ bootstrap-box
 
 Box allows you to configure a machine by "satisfying" dependencies.
 
-To satisfy an [apt](#apt-packages) dependency, for example, do `satisfy apt "package-name"`.
-This will ensure that the package is installed and is the latest version.
+To satisfy an [apt](#apt-packages) dependency, for example, do `satisfy apt
+"package-name"`. This will ensure that the package is installed and is the
+latest version.
 
 To execute some code before or after installing a package, use [Tasks](#tasks).
 
-For [file](#files) and [executable](#executables) tasks, box will execute a custom function
-which must do the install.
+For [file](#files) and [executable](#executables) tasks, box will execute a
+custom function which must do the install.
 You must write this function and it will be named `install-NAME`.
 
 ## Package types
