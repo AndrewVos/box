@@ -16,7 +16,7 @@ Contributions or bug reports will be very much appreciated!
 - [box](#box)
   - [Work in progress](#work-in-progress)
   - [Usage](#usage)
-  - [Dependency examples](#dependency-examples)
+  - [Package types](#package-types)
     - [APT packages](#apt-packages)
     - [Golang](#golang)
     - [Golang packages](#golang-packages)
@@ -44,7 +44,7 @@ For `file` and `executable` tasks, box will execute a custom function
 which installs the file or executable. The custom function will be generated
 from the first parameter.
 
-## Dependency examples
+## Package types
 
 ### APT packages
 
