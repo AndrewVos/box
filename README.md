@@ -2,19 +2,15 @@
 
 Manage your machine configuration in a simple bash DSL.
 
-Run ```box your-package-file``` to install your
-packages. Packages that are already installed
-will be skipped.
+Run ```box your-package-file``` to install your packages.
+Packages that are already installed will be skipped.
 
-## Work in progress
-
-This is very much a work in progress. It will be fairly stable
-but be warned, things may change.
+WARNING: This is very much a work in progress.
+It will be fairly stable but be warned, things may change.
 
 Contributions or bug reports will be very much appreciated!
 
 - [box](#box)
-  - [Work in progress](#work-in-progress)
   - [Usage](#usage)
   - [Package types](#package-types)
     - [APT packages](#apt-packages)
@@ -23,26 +19,22 @@ Contributions or bug reports will be very much appreciated!
     - [Github repositories](#github-repositories)
     - [Files](#files)
     - [Executables](#executables)
-  - [Hooks](#hooks)
-    - [Preinstall hooks](#preinstall-hooks)
-    - [Postinstall hooks](#postinstall-hooks)
+  - [Tasks](#tasks)
+    - [Preinstall tasks](#preinstall-tasks)
+    - [Postinstall tasks](#postinstall-tasks)
 
 ## Usage
 
 Box allows you to configure a machine by "satisfying" dependencies.
 
-To satisfy an `apt` dependency, for example, do `satisfy apt "package-name"`.
+To satisfy an [apt](#apt-packages) dependency, for example, do `satisfy apt "package-name"`.
 This will ensure that the package is installed and is the latest version.
 
-To check if a package will be installed or upgraded you can call `must-install`
-or `must-upgrade` before your `satisfy` command.
+To execute some code before or after installing a package, use [Tasks](#tasks).
 
-To check if a package was installed or upgraded, you can use `did-install` and
-`did-upgrade`.
-
-For `file` and `executable` tasks, box will execute a custom function
-which installs the file or executable. The custom function will be generated
-from the first parameter.
+For [file](#files) and [executable](#executables) tasks, box will execute a custom function
+which must do the install.
+You must write this function and it will be named `install-NAME`.
 
 ## Package types
 
@@ -94,9 +86,9 @@ function install-thing () {
 satisfy executable "thing"
 ```
 
-## Hooks
+## Tasks
 
-### Preinstall hooks
+### Preinstall tasks
 
 ```bash
 if will-install apt "enpass"; then
@@ -112,7 +104,7 @@ fi
 satisfy apt "enpass"
 ```
 
-### Postinstall hooks
+### Postinstall tasks
 
 ```bash
 satisfy apt "vim"
