@@ -20,7 +20,7 @@ satisfy file "slink" "/usr/local/bin/slink"
 satisfy apt "git"
 satisfy apt "nim"
 
-if ! check apt "enpass"; then
+if must-install apt "enpass"; then
   sudo echo "deb http://repo.sinew.in/ stable main" > /etc/apt/sources.list.d/enpass.list
   wget -O - https://dl.sinew.in/keys/enpass-linux.key | sudo apt-key add -
   sudo apt update
