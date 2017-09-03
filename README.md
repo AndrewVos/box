@@ -11,6 +11,7 @@ It will be fairly stable but be warned, things may change.
 Contributions or bug reports will be very much appreciated!
 
 - [box](#box)
+  - [Installation](#installation)
   - [Usage](#usage)
   - [Package types](#package-types)
     - [APT packages](#apt-packages)
@@ -22,6 +23,23 @@ Contributions or bug reports will be very much appreciated!
   - [Tasks](#tasks)
     - [Preinstall tasks](#preinstall-tasks)
     - [Postinstall tasks](#postinstall-tasks)
+
+## Installation
+
+You can bootstrap box into your box configuration script.
+
+```bash
+function bootstrap-box () {
+  local BOX_PATH="/usr/local/share/box/box.sh"
+  if [ ! -f "$BOX_PATH" ]; then
+    sudo mkdir -p `dirname "$BOX_PATH"`
+    sudo wget -O "$BOX_PATH" https://raw.githubusercontent.com/AndrewVos/box/master/box.sh
+    sudo chmod +x "$BOX_PATH"
+  fi
+  source "$BOX_PATH"
+}
+bootstrap-box
+```
 
 ## Usage
 

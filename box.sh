@@ -266,21 +266,3 @@ function satisfy-github () {
     BOX_ACTION=$BOX_ACTION_NONE
   fi
 }
-
-set +u
-if [[ -z $1 ]]; then
-  echo "Usage: box modules.sh"
-  echo "Commands:"
-  echo "  satisfy apt package-name"
-  echo "  satisfy executable executable"
-  echo "  satisfy file file-name /file/path"
-  echo "  satisfy github https://github.com/AndrewVos/box"
-  echo "  satisfy go-package package-name"
-  echo "  satisfy golang go1.9"
-
-  exit
-fi
-set -u
-
-BOX_MODULES=$1
-source $BOX_MODULES
