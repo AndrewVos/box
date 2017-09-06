@@ -76,3 +76,9 @@ function install-ruby-2-3-0 () {
   ruby-install ruby-2.3.0
 }
 satisfy file "ruby-2.3.0" "$HOME/.rubies/ruby-2.3.0/bin/ruby"
+
+function install-slack () {
+  wget https://downloads.slack-edge.com/linux_releases/slack-desktop-2.7.1-amd64.deb
+  sudo apt install - slack-desktop-2.7.1-amd64.deb
+}
+satisfy executable "slack"
