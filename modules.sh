@@ -79,6 +79,25 @@ satisfy file "ruby-2.3.0" "$HOME/.rubies/ruby-2.3.0/bin/ruby"
 
 function install-slack () {
   wget https://downloads.slack-edge.com/linux_releases/slack-desktop-2.7.1-amd64.deb
-  sudo apt install - slack-desktop-2.7.1-amd64.deb
+  sudo dpkg -i slack-desktop-2.7.1-amd64.deb
 }
 satisfy executable "slack"
+
+satisfy apt "docker.io"
+
+satisfy apt "nodejs"
+
+satisfy apt "curl"
+
+if must-install apt "yarn"; then
+  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+  echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+  sudo apt-get update
+fi
+satisfy apt "yarn"
+
+function install-discord () {
+  wget -O discord.deb 'https://discordapp.com/api/download?platform=linux&format=deb'
+  sudo dpkg -i discord.deb
+}
+satisfy executable "discord"
