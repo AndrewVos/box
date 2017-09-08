@@ -115,3 +115,11 @@ satisfy apt "libicu-dev"
 # VPN
 satisfy apt "openvpn"
 satisfy apt "network-manager-openvpn-gnome"
+
+function install-phantomjs () {
+  wget "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2"
+  bzip2 -d "phantomjs-2.1.1-linux-x86_64.tar.bz2"
+  tar -xf "phantomjs-2.1.1-linux-x86_64.tar"
+  sudo cp "phantomjs-2.1.1-linux-x86_64/bin/phantomjs" "/usr/local/bin/phantomjs"
+}
+satisfy executable "phantomjs"
