@@ -85,7 +85,20 @@ satisfy executable "slack"
 
 satisfy apt "docker.io"
 
-satisfy apt "nodejs"
+function install-nodejs () {
+  wget http://nodejs.org/dist/node-latest.tar.gz
+  tar -xf node-latest.tar.gz
+  cd node-v*
+  ./configure
+  CXX="g++ -Wno-unused-local-typedefs" make
+  CXX="g++ -Wno-unused-local-typedefs" sudo make install
+}
+satisfy executable "nodejs"
+
+function install-npm () {
+  npm install -g npm
+}
+satisfy executable "npm"
 
 satisfy apt "curl"
 
