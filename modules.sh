@@ -101,3 +101,17 @@ function install-discord () {
   sudo dpkg -i discord.deb
 }
 satisfy executable "discord"
+
+satisfy apt "postgresql"
+if did-install; then
+  sudo su postgres -c "createuser -s $USER"
+fi
+satisfy apt "libpq-dev"
+
+# HC
+satisfy apt "libicu-dev"
+
+
+# VPN
+satisfy apt "openvpn"
+satisfy apt "network-manager-openvpn-gnome"
