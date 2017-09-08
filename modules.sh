@@ -85,15 +85,12 @@ satisfy executable "slack"
 
 satisfy apt "docker.io"
 
-function install-nodejs () {
-  wget http://nodejs.org/dist/node-latest.tar.gz
-  tar -xf node-latest.tar.gz
-  cd node-v*
-  ./configure
-  CXX="g++ -Wno-unused-local-typedefs" make
-  CXX="g++ -Wno-unused-local-typedefs" sudo make install
-}
-satisfy executable "nodejs"
+if must-install apt "nodejs"; then
+  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 68576280
+  sudo apt-add-repository "deb https://deb.nodesource.com/node_8.x $(lsb_release -sc) main"
+  sudo apt-get update
+fi
+satisfy apt "nodejs"
 
 function install-npm () {
   npm install -g npm
