@@ -123,6 +123,33 @@ function satisfy-apt () {
   fi
 }
 
+function check-apt-ppa () {
+  local PPA=$1
+  local SEARCH=$(echo "$PPA" | sed 's/^ppa://')
+
+  if apt-cache policy | grep "$SEARCH" > /dev/null; then
+    BOX_STATUS=$BOX_STATUS_LATEST
+  else
+    BOX_STATUS=$BOX_STATUS_MISSING
+  fi
+}
+
+function satisfy-apt-ppa () {
+  local PPA=$1
+
+  check-apt-ppa "$PPA"
+
+  echo "$PPA -> $BOX_STATUS"
+
+  if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
+    BOX_ACTION=$BOX_ACTION_NONE
+  else
+    sudo add-apt-repository -y "$PPA"
+    sudo apt -y update
+    BOX_ACTION=$BOX_ACTION_INSTALL
+  fi
+}
+
 function check-golang () {
   local VERSION=$1
 

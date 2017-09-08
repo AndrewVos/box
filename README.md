@@ -12,6 +12,7 @@ Contributions or bug reports will be very much appreciated!
   - [Usage](#usage)
   - [Package types](#package-types)
     - [APT packages](#apt-packages)
+    - [APT PPAs](#apt-ppas)
     - [Golang](#golang)
     - [Golang packages](#golang-packages)
     - [Github repositories](#github-repositories)
@@ -61,6 +62,13 @@ You must write this function and it will be named `install-NAME`.
 ```bash
 satisfy apt "git"
 satisfy apt "vim"
+```
+
+### APT PPAs
+
+```bash
+satisfy apt-ppa "ppa:peek-developers/stable"
+satisfy apt "peek"
 ```
 
 ### Golang
