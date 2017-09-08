@@ -133,3 +133,11 @@ function install-phantomjs () {
   sudo cp "phantomjs-2.1.1-linux-x86_64/bin/phantomjs" "/usr/local/bin/phantomjs"
 }
 satisfy executable "phantomjs"
+
+if must-install apt "spotify-client"; then
+  sudo apt-key adv --keyserver "hkp://keyserver.ubuntu.com:80" --recv-keys "BBEBDCB318AD50EC6865090613B00F1FD2C19886" "0DF731E45CE24F27EEEB1450EFDC8610341D9410"
+  echo deb http://repository.spotify.com stable non-free | sudo tee /etc/apt/sources.list.d/spotify.list
+
+  sudo apt-get -y update
+fi
+satisfy apt "spotify-client"
