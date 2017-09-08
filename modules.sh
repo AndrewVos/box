@@ -141,3 +141,6 @@ if must-install apt "spotify-client"; then
   sudo apt-get -y update
 fi
 satisfy apt "spotify-client"
+
+satisfy apt-ppa "ppa:peek-developers/stable"
+satisfy apt "peek"
