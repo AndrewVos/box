@@ -79,8 +79,8 @@ function execute-function () {
 
   local TEMP_DIR=`mktemp --directory`
   cd "$TEMP_DIR"
-
   eval "$PREFIX-$IDENTIFIER"
+  cd -
 }
 
 function check-apt () {
@@ -221,6 +221,7 @@ function satisfy-golang () {
     cd $temp_dir
     wget "https://storage.googleapis.com/golang/$VERSION.linux-amd64.tar.gz"
     sudo tar -C /usr/local -xzf "$VERSION.linux-amd64.tar.gz"
+    cd -
     BOX_ACTION=$BOX_ACTION_INSTALL
   fi
 }
@@ -308,6 +309,8 @@ function check-github () {
     else
       BOX_STATUS=$BOX_STATUS_OUTDATED
     fi
+
+    cd -
   else
     BOX_STATUS=$BOX_STATUS_MISSING
   fi
@@ -327,6 +330,7 @@ function satisfy-github () {
   elif [[ $BOX_STATUS = $BOX_STATUS_OUTDATED ]]; then
     cd "$DESTINATION"
     git pull
+    cd -
     BOX_ACTION=$BOX_ACTION_UPGRADE
   else
     BOX_ACTION=$BOX_ACTION_NONE
