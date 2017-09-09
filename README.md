@@ -19,6 +19,7 @@ Contributions or bug reports will be very much appreciated!
     - [Files](#files)
     - [Executables](#executables)
     - [Symlinks](#symlinks)
+    - [Dconf Settings](#dconf-settings)
   - [Tasks](#tasks)
     - [Preinstall tasks](#preinstall-tasks)
     - [Postinstall tasks](#postinstall-tasks)
@@ -118,6 +119,12 @@ satisfy executable "thing"
 ```bash
 satisfy symlink "$HOME/dotfiles/bash/.bashrc" "$HOME/.bashrc"
 satisfy symlink "$HOME/dotfiles/vim/.vimrc" "$HOME/.vimrc"
+```
+
+### Dconf settings
+
+```bash
+satisfy dconf "/org/gnome/settings-daemon/plugins/media-keys/area-screenshot-clip" "<Shift><Super>s"
 ```
 
 ## Tasks

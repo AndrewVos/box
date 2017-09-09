@@ -18,13 +18,13 @@ UPGRADE_CACHE=$(mktemp)
 function satisfy () {
   local TYPE=$1
   shift
-  eval satisfy-$TYPE "$@"
+  satisfy-$TYPE "$@"
 }
 
 function check () {
   local TYPE=$1
   shift
-  eval check-$TYPE "$@"
+  check-$TYPE "$@"
 
   if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
     return 0
@@ -35,7 +35,7 @@ function check () {
 function must-install () {
   local TYPE=$1
   shift
-  eval check-$TYPE "$@"
+  check-$TYPE "$@"
 
   if [ $BOX_STATUS = $BOX_STATUS_MISSING ]; then
     return 0
@@ -46,7 +46,7 @@ function must-install () {
 function must-upgrade () {
   local TYPE=$1
   shift
-  eval check-$TYPE "$@"
+  check-$TYPE "$@"
 
   if [ $BOX_STATUS = $BOX_STATUS_OUTDATED ]; then
     return 0
@@ -79,7 +79,7 @@ function execute-function () {
 
   local TEMP_DIR=`mktemp --directory`
   cd "$TEMP_DIR"
-  eval "$PREFIX-$IDENTIFIER"
+  $PREFIX-$IDENTIFIER
   cd -
 }
 
@@ -332,6 +332,35 @@ function satisfy-github () {
     git pull
     cd -
     BOX_ACTION=$BOX_ACTION_UPGRADE
+  else
+    BOX_ACTION=$BOX_ACTION_NONE
+  fi
+}
+
+function check-dconf () {
+  local DCONF_PATH=$1
+  local DCONF_VALUE=$2
+
+  local CURRENT_VALUE=$(dconf read "$DCONF_PATH" | sed "s/^'//" | sed "s/'$//")
+
+  if [[ $CURRENT_VALUE = $DCONF_VALUE ]]; then
+    BOX_STATUS=$BOX_STATUS_LATEST
+  else
+    BOX_STATUS=$BOX_STATUS_MISSING
+  fi
+}
+
+function satisfy-dconf () {
+  local DCONF_PATH=$1
+  local DCONF_VALUE=$2
+
+  check-dconf "$DCONF_PATH" "$DCONF_VALUE"
+
+  echo "$DCONF_PATH -> $BOX_STATUS"
+
+  if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+    BOX_ACTION=$BOX_ACTION_INSTALL
+    dconf write "$DCONF_PATH" \"$DCONF_VALUE\"
   else
     BOX_ACTION=$BOX_ACTION_NONE
   fi
