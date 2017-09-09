@@ -123,6 +123,45 @@ function satisfy-apt () {
   fi
 }
 
+function check-deb () {
+  local PACKAGE=$1
+  local URL=$2
+
+  if [ ! -s $INSTALL_CACHE ]; then
+    dpkg --get-selections > $INSTALL_CACHE
+  fi
+
+  if [ ! -s $UPGRADE_CACHE ]; then
+    sudo apt-get -s upgrade > $UPGRADE_CACHE
+  fi
+
+  if ! cat $INSTALL_CACHE | grep -E "^$PACKAGE\\s+install$" > /dev/null; then
+    BOX_STATUS=$BOX_STATUS_MISSING
+  else
+    BOX_STATUS=$BOX_STATUS_LATEST
+  fi
+}
+
+function satisfy-deb () {
+  local PACKAGE=$1
+  local URL=$2
+
+  check-deb "$PACKAGE" "$URL"
+
+  print-box-status "$PACKAGE"
+
+  if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
+    BOX_ACTION=$BOX_ACTION_NONE
+  else
+    local TEMP_DIR=`mktemp --directory`
+    cd $TEMP_DIR
+    wget -O package.deb "$URL"
+    sudo dpkg -i package.deb
+    cd $OLDPWD
+    BOX_ACTION=$BOX_ACTION_INSTALL
+  fi
+}
+
 function check-apt-ppa () {
   local PPA=$1
   local SEARCH=$(echo "$PPA" | sed 's/^ppa://')
@@ -217,8 +256,8 @@ function satisfy-golang () {
   elif [[ $BOX_STATUS = $BOX_STATUS_MISMATCH ]]; then
     exit 1
   else
-    local temp_dir=`mktemp --directory`
-    cd $temp_dir
+    local TEMP_DIR=`mktemp --directory`
+    cd $TEMP_DIR
     wget "https://storage.googleapis.com/golang/$VERSION.linux-amd64.tar.gz"
     sudo tar -C /usr/local -xzf "$VERSION.linux-amd64.tar.gz"
     cd $OLDPWD

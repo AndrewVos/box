@@ -73,6 +73,12 @@ satisfy apt-ppa "ppa:peek-developers/stable"
 satisfy apt "peek"
 ```
 
+### Debian packages
+
+```bash
+satisfy deb "slack-desktop" "https://downloads.slack-edge.com/linux_releases/slack-desktop-2.7.1-amd64.deb"
+```
+
 ### Golang
 
 ```bash
