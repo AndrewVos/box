@@ -108,7 +108,7 @@ function satisfy-apt () {
 
   check-apt "$PACKAGE"
 
-  echo "$PACKAGE -> $BOX_STATUS"
+  print-box-status "$PACKAGE"
 
   if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
     BOX_ACTION=$BOX_ACTION_NONE
@@ -139,7 +139,7 @@ function satisfy-apt-ppa () {
 
   check-apt-ppa "$PPA"
 
-  echo "$PPA -> $BOX_STATUS"
+  print-box-status "$PPA"
 
   if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
     BOX_ACTION=$BOX_ACTION_NONE
@@ -175,7 +175,7 @@ function satisfy-symlink () {
 
   check-symlink "$TARGET" "$NAME"
 
-  echo "$NAME -> $BOX_STATUS"
+  print-box-status "$NAME"
 
   if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
@@ -210,7 +210,7 @@ function satisfy-golang () {
 
   check-golang "$VERSION"
 
-  echo "golang $VERSION -> $BOX_STATUS"
+  print-box-status "golang $VERSION"
 
   if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
@@ -230,7 +230,7 @@ function satisfy-executable () {
   local EXECUTABLE=$1
   check-executable "$EXECUTABLE"
 
-  echo "$EXECUTABLE -> $BOX_STATUS"
+  print-box-status "$EXECUTABLE"
 
   if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     execute-function "install" "$EXECUTABLE"
@@ -253,7 +253,7 @@ function satisfy-file () {
 
   check-file "$NAME" "$FILE"
 
-  echo "$NAME -> $BOX_STATUS"
+  print-box-status "$NAME"
 
   if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     execute-function "install" "$NAME"
@@ -286,7 +286,7 @@ function satisfy-go-package () {
 
   check-go-package "$PACKAGE"
 
-  echo "$PACKAGE -> $BOX_STATUS"
+  print-box-status "$PACKAGE"
 
   if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     go get "$PACKAGE"
@@ -322,7 +322,7 @@ function satisfy-github () {
 
   check-github "$REPOSITORY" "$DESTINATION"
 
-  echo "$REPOSITORY -> $BOX_STATUS"
+  print-box-status "$REPOSITORY"
 
   if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     git clone "$REPOSITORY" "$DESTINATION"
@@ -356,7 +356,7 @@ function satisfy-dconf () {
 
   check-dconf "$DCONF_PATH" "$DCONF_VALUE"
 
-  echo "$DCONF_PATH -> $BOX_STATUS"
+  print-box-status "$DCONF_PATH"
 
   if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     BOX_ACTION=$BOX_ACTION_INSTALL
@@ -364,4 +364,30 @@ function satisfy-dconf () {
   else
     BOX_ACTION=$BOX_ACTION_NONE
   fi
+}
+
+function print-box-status () {
+  local NAME=$1
+
+  if [[ -t 1 ]]; then
+    local COLOUR_END='\033[0m'
+    local RED='\033[0;31m'
+    local GREEN='\033[0;32m'
+    local YELLOW='\033[0;33m'
+
+    if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+      local COLOUR=$RED
+    elif [[ $BOX_STATUS = $BOX_STATUS_OUTDATED ]]; then
+      local COLOUR=$YELLOW
+    elif [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
+      local COLOUR=$GREEN
+    elif [[ $BOX_STATUS = $BOX_STATUS_MISMATCH ]]; then
+      local COLOUR=$RED
+    fi
+
+    printf "$NAME -> $COLOUR$BOX_STATUS$COLOUR_END\n"
+  else
+    echo "$NAME -> $BOX_STATUS"
+  fi
+
 }
