@@ -18,6 +18,7 @@ Contributions or bug reports will be very much appreciated!
     - [Github repositories](#github-repositories)
     - [Files](#files)
     - [Executables](#executables)
+    - [Symlinks](#symlinks)
   - [Tasks](#tasks)
     - [Preinstall tasks](#preinstall-tasks)
     - [Postinstall tasks](#postinstall-tasks)
@@ -110,6 +111,13 @@ function install-thing () {
   sudo wget -O /usr/bin/thing https://example.org/thing
 }
 satisfy executable "thing"
+```
+
+### Symlinks
+
+```bash
+satisfy symlink "$HOME/dotfiles/bash/.bashrc" "$HOME/.bashrc"
+satisfy symlink "$HOME/dotfiles/vim/.vimrc" "$HOME/.vimrc"
 ```
 
 ## Tasks

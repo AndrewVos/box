@@ -150,6 +150,45 @@ function satisfy-apt-ppa () {
   fi
 }
 
+function check-symlink () {
+  local TARGET=$1
+  local NAME=$2
+
+  if [[ -L $NAME ]]; then
+    local EXISTING_TARGET=$(readlink -f "$NAME")
+
+    if [[ "$EXISTING_TARGET" = "$TARGET" ]]; then
+      BOX_STATUS=$BOX_STATUS_LATEST
+    else
+      BOX_STATUS=$BOX_STATUS_MISMATCH
+    fi
+  elif [[ -e $NAME ]]; then
+    BOX_STATUS=$BOX_STATUS_MISMATCH
+  else
+    BOX_STATUS=$BOX_STATUS_MISSING
+  fi
+}
+
+function satisfy-symlink () {
+  local TARGET=$1
+  local NAME=$2
+
+  check-symlink "$TARGET" "$NAME"
+
+  echo "$NAME -> $BOX_STATUS"
+
+  if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
+    BOX_ACTION=$BOX_ACTION_NONE
+  elif [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+    ln -s "$TARGET" "$NAME"
+    BOX_ACTION=$BOX_ACTION_INSTALL
+  elif [[ $BOX_STATUS = $BOX_STATUS_MISMATCH ]]; then
+    echo "Couldn't create symlink $NAME, because it already exists"
+    echo "and is either a file, or a symlink pointing somewhere else."
+    exit 1
+  fi
+}
+
 function check-golang () {
   local VERSION=$1
 
