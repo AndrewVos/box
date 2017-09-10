@@ -20,6 +20,7 @@ Contributions or bug reports will be very much appreciated!
     - [Executables](#executables)
     - [Symlinks](#symlinks)
     - [Dconf Settings](#dconf-settings)
+    - [File lines](#file-lines)
   - [Tasks](#tasks)
     - [Preinstall tasks](#preinstall-tasks)
     - [Postinstall tasks](#postinstall-tasks)
@@ -131,6 +132,12 @@ satisfy symlink "$HOME/dotfiles/vim/.vimrc" "$HOME/.vimrc"
 
 ```bash
 satisfy dconf "/org/gnome/settings-daemon/plugins/media-keys/area-screenshot-clip" "<Shift><Super>s"
+```
+
+### File lines
+
+```bash
+satisfy file-line ~/.bashrc "Source my aliases" "source ~/.my-aliases"
 ```
 
 ## Tasks

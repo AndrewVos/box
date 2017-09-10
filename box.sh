@@ -189,6 +189,41 @@ function satisfy-apt-ppa () {
   fi
 }
 
+function check-file-line () {
+  local FILE_PATH=$1
+  local COMMENT=$2
+  local LINE=$3
+  local FULL_LINE="$LINE # $COMMENT"
+
+  if [[ -f "$FILE_PATH" ]]; then
+    if grep "$FULL_LINE" "$FILE_PATH" > /dev/null; then
+      BOX_STATUS=$BOX_STATUS_LATEST
+    else
+      BOX_STATUS=$BOX_STATUS_MISSING
+    fi
+  else
+    BOX_STATUS=$BOX_STATUS_MISSING
+  fi
+}
+
+function satisfy-file-line () {
+  local FILE_PATH=$1
+  local COMMENT=$2
+  local LINE=$3
+  local FULL_LINE="$LINE # $COMMENT"
+
+  check-file-line "$FILE_PATH" "$COMMENT" "$LINE"
+
+  print-box-status "$FILE_PATH $COMMENT"
+
+  if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
+    BOX_ACTION=$BOX_ACTION_NONE
+  else
+    echo "$FULL_LINE" >> "$FILE_PATH"
+    BOX_ACTION=$BOX_ACTION_INSTALL
+  fi
+}
+
 function check-symlink () {
   local TARGET=$1
   local NAME=$2
