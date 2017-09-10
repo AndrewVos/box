@@ -18,6 +18,9 @@ UPGRADE_CACHE=$(mktemp)
 function satisfy () {
   local TYPE=$1
   shift
+
+  check-$TYPE "$@"
+  print-box-status "$1"
   satisfy-$TYPE "$@"
 }
 
@@ -106,10 +109,6 @@ function check-apt () {
 function satisfy-apt () {
   local PACKAGE=$1
 
-  check-apt "$PACKAGE"
-
-  print-box-status "$PACKAGE"
-
   if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
     BOX_ACTION=$BOX_ACTION_NONE
   else
@@ -146,10 +145,6 @@ function satisfy-deb () {
   local PACKAGE=$1
   local URL=$2
 
-  check-deb "$PACKAGE" "$URL"
-
-  print-box-status "$PACKAGE"
-
   if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
   else
@@ -175,10 +170,6 @@ function check-apt-ppa () {
 
 function satisfy-apt-ppa () {
   local PPA=$1
-
-  check-apt-ppa "$PPA"
-
-  print-box-status "$PPA"
 
   if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
     BOX_ACTION=$BOX_ACTION_NONE
@@ -212,10 +203,6 @@ function satisfy-file-line () {
   local LINE=$3
   local FULL_LINE="$LINE # $COMMENT"
 
-  check-file-line "$FILE_PATH" "$COMMENT" "$LINE"
-
-  print-box-status "$FILE_PATH $COMMENT"
-
   if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
   else
@@ -246,10 +233,6 @@ function check-symlink () {
 function satisfy-symlink () {
   local TARGET=$1
   local NAME=$2
-
-  check-symlink "$TARGET" "$NAME"
-
-  print-box-status "$NAME"
 
   if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
@@ -282,10 +265,6 @@ function check-golang () {
 function satisfy-golang () {
   local VERSION=$1
 
-  check-golang "$VERSION"
-
-  print-box-status "golang $VERSION"
-
   if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
   elif [[ $BOX_STATUS = $BOX_STATUS_MISMATCH ]]; then
@@ -302,9 +281,6 @@ function satisfy-golang () {
 
 function satisfy-executable () {
   local EXECUTABLE=$1
-  check-executable "$EXECUTABLE"
-
-  print-box-status "$EXECUTABLE"
 
   if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     execute-function "install" "$EXECUTABLE"
@@ -324,10 +300,6 @@ function check-executable () {
 function satisfy-file () {
   local NAME=$1
   local FILE=$2
-
-  check-file "$NAME" "$FILE"
-
-  print-box-status "$NAME"
 
   if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     execute-function "install" "$NAME"
@@ -357,10 +329,6 @@ function check-go-package () {
 
 function satisfy-go-package () {
   local PACKAGE=$1
-
-  check-go-package "$PACKAGE"
-
-  print-box-status "$PACKAGE"
 
   if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     go get "$PACKAGE"
@@ -394,10 +362,6 @@ function satisfy-github () {
   local REPOSITORY=$1
   local DESTINATION=$2
 
-  check-github "$REPOSITORY" "$DESTINATION"
-
-  print-box-status "$REPOSITORY"
-
   if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     git clone "$REPOSITORY" "$DESTINATION"
     BOX_ACTION=$BOX_ACTION_INSTALL
@@ -427,10 +391,6 @@ function check-dconf () {
 function satisfy-dconf () {
   local DCONF_PATH=$1
   local DCONF_VALUE=$2
-
-  check-dconf "$DCONF_PATH" "$DCONF_VALUE"
-
-  print-box-status "$DCONF_PATH"
 
   if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
     BOX_ACTION=$BOX_ACTION_INSTALL
