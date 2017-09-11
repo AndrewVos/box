@@ -101,15 +101,23 @@ function execute-function () {
   cd $OLDPWD
 }
 
+function update-apt-install-cache () {
+  dpkg --get-selections > $INSTALL_CACHE
+}
+
+function update-apt-upgrade-cache () {
+  sudo apt-get -s upgrade > $UPGRADE_CACHE
+}
+
 function check-apt () {
   local PACKAGE=$1
 
   if [ ! -s $INSTALL_CACHE ]; then
-    dpkg --get-selections > $INSTALL_CACHE
+    update-apt-install-cache
   fi
 
   if [ ! -s $UPGRADE_CACHE ]; then
-    sudo apt-get -s upgrade > $UPGRADE_CACHE
+    update-apt-upgrade-cache
   fi
 
   if ! cat $INSTALL_CACHE | grep -E "^$PACKAGE\\s+install$" > /dev/null; then
@@ -127,7 +135,9 @@ function satisfy-apt () {
   if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
     BOX_ACTION=$BOX_ACTION_NONE
   else
-    sudo apt-get install "$PACKAGE"
+    sudo apt-get -y install "$PACKAGE"
+    update-apt-install-cache
+    update-apt-upgrade-cache
 
     if [ $BOX_STATUS = $BOX_STATUS_OUTDATED ]; then
       BOX_ACTION=$BOX_ACTION_UPGRADE
@@ -142,11 +152,11 @@ function check-deb () {
   local URL=$2
 
   if [ ! -s $INSTALL_CACHE ]; then
-    dpkg --get-selections > $INSTALL_CACHE
+    update-apt-install-cache
   fi
 
   if [ ! -s $UPGRADE_CACHE ]; then
-    sudo apt-get -s upgrade > $UPGRADE_CACHE
+    update-apt-upgrade-cache
   fi
 
   if ! cat $INSTALL_CACHE | grep -E "^$PACKAGE\\s+install$" > /dev/null; then
@@ -190,7 +200,9 @@ function satisfy-apt-ppa () {
     BOX_ACTION=$BOX_ACTION_NONE
   else
     sudo add-apt-repository -y "$PPA"
-    sudo apt -y update
+    sudo apt-get -y update
+    update-apt-install-cache
+    update-apt-upgrade-cache
     BOX_ACTION=$BOX_ACTION_INSTALL
   fi
 }
