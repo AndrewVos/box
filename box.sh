@@ -439,5 +439,4 @@ function print-box-status () {
   else
     echo "$SECTION_PREFIX$TYPE $LABEL -> $BOX_STATUS"
   fi
-
 }
