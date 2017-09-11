@@ -24,6 +24,7 @@ Contributions or bug reports will be very much appreciated!
   - [Tasks](#tasks)
     - [Preinstall tasks](#preinstall-tasks)
     - [Postinstall tasks](#postinstall-tasks)
+  - [Sections](#sections)
 
 ## Installation
 
@@ -171,3 +172,25 @@ if did-upgrade; then
   echo "vim was upgraded"
 fi
 ```
+
+## Sections
+
+For the obsessive among us, you can wrap sections of your config in `section` for some nesting and
+a nice label:
+
+```bash
+section "VIM"
+  satisfy apt "vim"
+  satisfy symlink "$HOME/dotfiles/vim/.vimrc" "$HOME/.vimrc"
+end-section
+```
+
+This will output something like:
+
+```
+[VIM]
+  apt vim -> latest
+  symlink /home/andrewvos/vimfiles/.vimrc -> latest
+```
+
+You can add as many levels of nesting as you see fit. Go wild.

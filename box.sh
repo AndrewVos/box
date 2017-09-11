@@ -15,12 +15,14 @@ BOX_STATUS_MISMATCH="mismatch"
 INSTALL_CACHE=$(mktemp)
 UPGRADE_CACHE=$(mktemp)
 
+SECTION_PREFIX=''
+
 function satisfy () {
   local TYPE=$1
   shift
 
   check-$TYPE "$@"
-  print-box-status "$1"
+  print-box-status "$TYPE" "$1"
   satisfy-$TYPE "$@"
 }
 
@@ -33,6 +35,19 @@ function check () {
     return 0
   fi
   return 1
+}
+
+function section () {
+  local LABEL=$1
+  echo "$SECTION_PREFIX[$LABEL]"
+  SECTION_PREFIX="  $SECTION_PREFIX"
+}
+
+function end-section () {
+  SECTION_PREFIX=$(echo $SECTION_PREFIX | sed 's/^  //')
+  if [[ $SECTION_PREFIX = '' ]]; then
+    echo
+  fi
 }
 
 function must-install () {
@@ -401,7 +416,8 @@ function satisfy-dconf () {
 }
 
 function print-box-status () {
-  local NAME=$1
+  local TYPE=$1
+  local LABEL=$2
 
   if [[ -t 1 ]]; then
     local COLOUR_END='\033[0m'
@@ -419,9 +435,9 @@ function print-box-status () {
       local COLOUR=$RED
     fi
 
-    printf "$NAME -> $COLOUR$BOX_STATUS$COLOUR_END\n"
+    printf "$SECTION_PREFIX$TYPE $LABEL -> $COLOUR$BOX_STATUS$COLOUR_END\n"
   else
-    echo "$NAME -> $BOX_STATUS"
+    echo "$SECTION_PREFIX$TYPE $LABEL -> $BOX_STATUS"
   fi
 
 }
