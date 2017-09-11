@@ -10,6 +10,7 @@ Contributions or bug reports will be very much appreciated!
 Take a look at my personal dev machine setup [here](https://github.com/AndrewVos/box-vos).
 
 - [box](#box)
+  - [Demonstration](#demonstration)
   - [Installation](#installation)
   - [Usage](#usage)
   - [Package types](#package-types)
@@ -27,6 +28,10 @@ Take a look at my personal dev machine setup [here](https://github.com/AndrewVos
     - [Preinstall tasks](#preinstall-tasks)
     - [Postinstall tasks](#postinstall-tasks)
   - [Sections](#sections)
+
+## Demonstration
+
+![demonstration](demonstration.gif)
 
 ## Installation
 
