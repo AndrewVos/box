@@ -137,7 +137,7 @@ satisfy dconf "/org/gnome/settings-daemon/plugins/media-keys/area-screenshot-cli
 ### File lines
 
 ```bash
-satisfy file-line ~/.bashrc "Source my aliases" "source ~/.my-aliases"
+satisfy file-line "Source my aliases" ~/.bashrc "source ~/.my-aliases"
 ```
 
 ## Tasks

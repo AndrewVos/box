@@ -181,8 +181,8 @@ function satisfy-apt-ppa () {
 }
 
 function check-file-line () {
-  local FILE_PATH=$1
-  local COMMENT=$2
+  local COMMENT=$1
+  local FILE_PATH=$2
   local LINE=$3
   local FULL_LINE="$LINE # $COMMENT"
 
@@ -198,8 +198,8 @@ function check-file-line () {
 }
 
 function satisfy-file-line () {
-  local FILE_PATH=$1
-  local COMMENT=$2
+  local COMMENT=$1
+  local FILE_PATH=$2
   local LINE=$3
   local FULL_LINE="$LINE # $COMMENT"
 
