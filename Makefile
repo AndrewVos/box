@@ -1,13 +1,11 @@
 .PHONY: test image
 
 TESTS=$(wildcard tests/*-test.sh)
-TEST_OUTPUTS=$(patsubst %.sh,%.out,$(TESTS))
 
-%.out: %.sh image
-	@sudo docker run -t box-test /bin/bash "-c" "./$^"
+test: $(TESTS)
 
-test: $(TEST_OUTPUTS)
-	@echo
+$(TESTS): image
+	@sudo docker run -t box-test /bin/bash "-c" "./$@"
 
 image:
 	@sudo docker build -q -t box-test .
