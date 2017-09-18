@@ -122,7 +122,7 @@ function check-apt () {
 
   if ! cat $INSTALL_CACHE | grep -E "^$PACKAGE\\s+install$" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
-  elif cat $UPGRADE_CACHE | grep -E '^Inst ' | cut -d ' ' -f 2 | grep -E "^$PACKAGE"; then
+  elif cat $UPGRADE_CACHE | grep -E '^Inst ' | cut -d ' ' -f 2 | grep -E "^$PACKAGE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_OUTDATED
   else
     BOX_STATUS=$BOX_STATUS_LATEST
