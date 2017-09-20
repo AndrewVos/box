@@ -21,17 +21,17 @@ function satisfy () {
   local TYPE=$1
   shift
 
-  check-$TYPE "$@"
+  check-"$TYPE" "$@"
   print-box-status "$TYPE" "$1"
-  satisfy-$TYPE "$@"
+  satisfy-"$TYPE" "$@"
 }
 
 function check () {
   local TYPE=$1
   shift
-  check-$TYPE "$@"
+  check-"$TYPE" "$@"
 
-  if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
     return 0
   fi
   return 1
@@ -44,7 +44,7 @@ function section () {
 }
 
 function end-section () {
-  SECTION_PREFIX=$(echo $SECTION_PREFIX | sed 's/^  //')
+  SECTION_PREFIX=${SECTION_PREFIX/#  /}
   if [[ $SECTION_PREFIX = '' ]]; then
     echo
   fi
@@ -53,9 +53,9 @@ function end-section () {
 function must-install () {
   local TYPE=$1
   shift
-  check-$TYPE "$@"
+  check-"$TYPE" "$@"
 
-  if [ $BOX_STATUS = $BOX_STATUS_MISSING ]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
     return 0
   fi
   return 1
@@ -64,16 +64,16 @@ function must-install () {
 function must-upgrade () {
   local TYPE=$1
   shift
-  check-$TYPE "$@"
+  check-"$TYPE" "$@"
 
-  if [ $BOX_STATUS = $BOX_STATUS_OUTDATED ]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_OUTDATED" ]]; then
     return 0
   fi
   return 1
 }
 
 function did-install () {
-  if [ $BOX_ACTION = $BOX_ACTION_INSTALL ]; then
+  if [[ "$BOX_ACTION" = "$BOX_ACTION_INSTALL" ]]; then
     return 0
   else
     return 1
@@ -81,7 +81,7 @@ function did-install () {
 }
 
 function did-upgrade () {
-  if [ $BOX_ACTION = $BOX_ACTION_UPGRADE ]; then
+  if [[ "$BOX_ACTION" = "$BOX_ACTION_UPGRADE" ]]; then
     return 0
   else
     return 1
@@ -92,37 +92,38 @@ function execute-function () {
   local PREFIX=$1
   local IDENTIFIER=$2
 
-  local IDENTIFIER=$(echo "$IDENTIFIER" | sed 's/^[^A-Za-z0-9]//')
-  local IDENTIFIER=$(echo "$IDENTIFIER" | sed 's/[^A-Za-z0-9]/-/g')
+  IDENTIFIER=${IDENTIFIER/#[^A-Za-z0-9]/}
+  IDENTIFIER=${IDENTIFIER//[^A-Za-z0-9]/-}
 
-  local TEMP_DIR=`mktemp --directory`
+  local TEMP_DIR
+  TEMP_DIR=$(mktemp --directory)
   cd "$TEMP_DIR"
-  $PREFIX-$IDENTIFIER
-  cd $OLDPWD
+  "$PREFIX"-"$IDENTIFIER"
+  cd "$OLDPWD"
 }
 
 function update-apt-install-cache () {
-  dpkg --get-selections > $INSTALL_CACHE
+  dpkg --get-selections > "$INSTALL_CACHE"
 }
 
 function update-apt-upgrade-cache () {
-  sudo apt-get -s upgrade > $UPGRADE_CACHE
+  apt-get -s upgrade > "$UPGRADE_CACHE"
 }
 
 function check-apt () {
   local PACKAGE=$1
 
-  if [ ! -s $INSTALL_CACHE ]; then
+  if [[ ! -s "$INSTALL_CACHE" ]]; then
     update-apt-install-cache
   fi
 
-  if [ ! -s $UPGRADE_CACHE ]; then
+  if [[ ! -s "$UPGRADE_CACHE" ]]; then
     update-apt-upgrade-cache
   fi
 
-  if ! cat $INSTALL_CACHE | grep -E "^$PACKAGE\\s+install$" > /dev/null; then
+  if ! grep -E "^$PACKAGE\\s+install$" < "$INSTALL_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
-  elif cat $UPGRADE_CACHE | grep -E '^Inst ' | cut -d ' ' -f 2 | grep -E "^$PACKAGE" > /dev/null; then
+  elif grep -E '^Inst ' < "$UPGRADE_CACHE" | cut -d ' ' -f 2 | grep -E "^$PACKAGE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_OUTDATED
   else
     BOX_STATUS=$BOX_STATUS_LATEST
@@ -132,16 +133,16 @@ function check-apt () {
 function satisfy-apt () {
   local PACKAGE=$1
 
-  if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
   else
     sudo apt-get -y install "$PACKAGE"
     update-apt-install-cache
     update-apt-upgrade-cache
 
-    if [ $BOX_STATUS = $BOX_STATUS_OUTDATED ]; then
+    if [[ "$BOX_STATUS" = "$BOX_STATUS_OUTDATED" ]]; then
       BOX_ACTION=$BOX_ACTION_UPGRADE
-    elif [ $BOX_STATUS = $BOX_STATUS_MISSING ]; then
+    elif [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
       BOX_ACTION=$BOX_ACTION_INSTALL
     fi
   fi
@@ -151,15 +152,15 @@ function check-deb () {
   local PACKAGE=$1
   local URL=$2
 
-  if [ ! -s $INSTALL_CACHE ]; then
+  if [[ ! -s "$INSTALL_CACHE" ]]; then
     update-apt-install-cache
   fi
 
-  if [ ! -s $UPGRADE_CACHE ]; then
+  if [[ ! -s "$UPGRADE_CACHE" ]]; then
     update-apt-upgrade-cache
   fi
 
-  if ! cat $INSTALL_CACHE | grep -E "^$PACKAGE\\s+install$" > /dev/null; then
+  if ! grep -E "^$PACKAGE\\s+install$" < "$INSTALL_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
   else
     BOX_STATUS=$BOX_STATUS_LATEST
@@ -170,21 +171,23 @@ function satisfy-deb () {
   local PACKAGE=$1
   local URL=$2
 
-  if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
   else
-    local TEMP_DIR=`mktemp --directory`
-    cd $TEMP_DIR
+    local TEMP_DIR
+    TEMP_DIR=$(mktemp --directory)
+    cd "$TEMP_DIR"
     wget -O package.deb "$URL"
     sudo dpkg -i package.deb
-    cd $OLDPWD
+    cd "$OLDPWD"
     BOX_ACTION=$BOX_ACTION_INSTALL
   fi
 }
 
 function check-apt-ppa () {
   local PPA=$1
-  local SEARCH=$(echo "$PPA" | sed 's/^ppa://')
+  local SEARCH
+  SEARCH=${PPA/#ppa:/}
 
   if apt-cache policy | grep "$SEARCH" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_LATEST
@@ -196,7 +199,7 @@ function check-apt-ppa () {
 function satisfy-apt-ppa () {
   local PPA=$1
 
-  if [ $BOX_STATUS = $BOX_STATUS_LATEST ]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
   else
     sudo add-apt-repository -y "$PPA"
@@ -230,7 +233,7 @@ function satisfy-file-line () {
   local LINE=$3
   local FULL_LINE="$LINE # $COMMENT"
 
-  if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
   else
     echo "$FULL_LINE" >> "$FILE_PATH"
@@ -243,7 +246,8 @@ function check-symlink () {
   local NAME=$2
 
   if [[ -L $NAME ]]; then
-    local EXISTING_TARGET=$(readlink -f "$NAME")
+    local EXISTING_TARGET
+    EXISTING_TARGET=$(readlink -f "$NAME")
 
     if [[ "$EXISTING_TARGET" = "$TARGET" ]]; then
       BOX_STATUS=$BOX_STATUS_LATEST
@@ -261,12 +265,12 @@ function satisfy-symlink () {
   local TARGET=$1
   local NAME=$2
 
-  if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
-  elif [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+  elif [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
     ln -s "$TARGET" "$NAME"
     BOX_ACTION=$BOX_ACTION_INSTALL
-  elif [[ $BOX_STATUS = $BOX_STATUS_MISMATCH ]]; then
+  elif [[ "$BOX_STATUS" = "$BOX_STATUS_MISMATCH" ]]; then
     echo "Couldn't create symlink $NAME, because it already exists"
     echo "and is either a file, or a symlink pointing somewhere else."
     exit 1
@@ -276,10 +280,11 @@ function satisfy-symlink () {
 function check-golang () {
   local VERSION=$1
 
-  if [ -f "/usr/local/go/bin/go" ]; then
-    local CURRENT_VERSION=$(go version | cut -d ' ' -f 3)
+  if [[ -f "/usr/local/go/bin/go" ]]; then
+    local CURRENT_VERSION
+    CURRENT_VERSION=$(go version | cut -d ' ' -f 3)
 
-    if [[ $CURRENT_VERSION = $VERSION ]]; then
+    if [[ "$CURRENT_VERSION" = "$VERSION" ]]; then
       BOX_STATUS=$BOX_STATUS_LATEST
     else
       BOX_STATUS=$BOX_STATUS_MISMATCH
@@ -292,16 +297,17 @@ function check-golang () {
 function satisfy-golang () {
   local VERSION=$1
 
-  if [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
-  elif [[ $BOX_STATUS = $BOX_STATUS_MISMATCH ]]; then
+  elif [[ "$BOX_STATUS" = "$BOX_STATUS_MISMATCH" ]]; then
     exit 1
   else
-    local TEMP_DIR=`mktemp --directory`
-    cd $TEMP_DIR
+    local TEMP_DIR
+    TEMP_DIR=$(mktemp --directory)
+    cd "$TEMP_DIR"
     wget "https://storage.googleapis.com/golang/$VERSION.linux-amd64.tar.gz"
     sudo tar -C /usr/local -xzf "$VERSION.linux-amd64.tar.gz"
-    cd $OLDPWD
+    cd "$OLDPWD"
     BOX_ACTION=$BOX_ACTION_INSTALL
   fi
 }
@@ -309,7 +315,7 @@ function satisfy-golang () {
 function satisfy-executable () {
   local EXECUTABLE=$1
 
-  if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
     execute-function "install" "$EXECUTABLE"
   fi
 }
@@ -317,7 +323,7 @@ function satisfy-executable () {
 function check-executable () {
   local EXECUTABLE=$1
 
-  if hash $EXECUTABLE 2>/dev/null; then
+  if hash "$EXECUTABLE" 2>/dev/null; then
     BOX_STATUS=$BOX_STATUS_LATEST
   else
     BOX_STATUS=$BOX_STATUS_MISSING
@@ -328,7 +334,7 @@ function satisfy-file () {
   local NAME=$1
   local FILE=$2
 
-  if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
     execute-function "install" "$NAME"
   fi
 }
@@ -357,7 +363,7 @@ function check-go-package () {
 function satisfy-go-package () {
   local PACKAGE=$1
 
-  if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
     go get "$PACKAGE"
     BOX_ACTION=$BOX_ACTION_INSTALL
   else
@@ -369,17 +375,17 @@ function check-github () {
   local REPOSITORY=$1
   local DESTINATION=$2
 
-  if [ -d "$DESTINATION" ]; then
+  if [[ -d "$DESTINATION" ]]; then
     cd "$DESTINATION"
     git fetch --quiet > /dev/null
 
-    if [ $(git rev-parse HEAD) == $(git rev-parse @{u}) ]; then
+    if [[ "$(git rev-parse HEAD)" == "$(git rev-parse '@{u}')" ]]; then
       BOX_STATUS=$BOX_STATUS_LATEST
     else
       BOX_STATUS=$BOX_STATUS_OUTDATED
     fi
 
-    cd $OLDPWD
+    cd "$OLDPWD"
   else
     BOX_STATUS=$BOX_STATUS_MISSING
   fi
@@ -389,13 +395,13 @@ function satisfy-github () {
   local REPOSITORY=$1
   local DESTINATION=$2
 
-  if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
     git clone "$REPOSITORY" "$DESTINATION"
     BOX_ACTION=$BOX_ACTION_INSTALL
-  elif [[ $BOX_STATUS = $BOX_STATUS_OUTDATED ]]; then
+  elif [[ "$BOX_STATUS" = "$BOX_STATUS_OUTDATED" ]]; then
     cd "$DESTINATION"
     git pull
-    cd $OLDPWD
+    cd "$OLDPWD"
     BOX_ACTION=$BOX_ACTION_UPGRADE
   else
     BOX_ACTION=$BOX_ACTION_NONE
@@ -405,10 +411,10 @@ function satisfy-github () {
 function check-dconf () {
   local DCONF_PATH=$1
   local DCONF_VALUE=$2
+  local CURRENT_VALUE
+  CURRENT_VALUE=$(dconf read "$DCONF_PATH" | sed "s/^'//" | sed "s/'$//")
 
-  local CURRENT_VALUE=$(dconf read "$DCONF_PATH" | sed "s/^'//" | sed "s/'$//")
-
-  if [[ $CURRENT_VALUE = $DCONF_VALUE ]]; then
+  if [[ "$CURRENT_VALUE" = "$DCONF_VALUE" ]]; then
     BOX_STATUS=$BOX_STATUS_LATEST
   else
     BOX_STATUS=$BOX_STATUS_MISSING
@@ -419,9 +425,9 @@ function satisfy-dconf () {
   local DCONF_PATH=$1
   local DCONF_VALUE=$2
 
-  if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
     BOX_ACTION=$BOX_ACTION_INSTALL
-    dconf write "$DCONF_PATH" \"$DCONF_VALUE\"
+    dconf write "$DCONF_PATH" "\"$DCONF_VALUE\""
   else
     BOX_ACTION=$BOX_ACTION_NONE
   fi
@@ -437,17 +443,17 @@ function print-box-status () {
     local GREEN='\033[0;32m'
     local YELLOW='\033[0;33m'
 
-    if [[ $BOX_STATUS = $BOX_STATUS_MISSING ]]; then
+    if [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
       local COLOUR=$RED
-    elif [[ $BOX_STATUS = $BOX_STATUS_OUTDATED ]]; then
+    elif [[ "$BOX_STATUS" = "$BOX_STATUS_OUTDATED" ]]; then
       local COLOUR=$YELLOW
-    elif [[ $BOX_STATUS = $BOX_STATUS_LATEST ]]; then
+    elif [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
       local COLOUR=$GREEN
-    elif [[ $BOX_STATUS = $BOX_STATUS_MISMATCH ]]; then
+    elif [[ "$BOX_STATUS" = "$BOX_STATUS_MISMATCH" ]]; then
       local COLOUR=$RED
     fi
 
-    printf "$SECTION_PREFIX$TYPE $LABEL -> $COLOUR$BOX_STATUS$COLOUR_END\n"
+    printf "%s%s %s -> %b%s%b\n" "$SECTION_PREFIX" "$TYPE" "$LABEL" "$COLOUR" "$BOX_STATUS" "$COLOUR_END"
   else
     echo "$SECTION_PREFIX$TYPE $LABEL -> $BOX_STATUS"
   fi

@@ -1,6 +1,7 @@
 FROM ubuntu
 
 RUN apt-get -y update
+RUN apt-get -y upgrade
 RUN apt-get -y install sudo
 RUN apt-get -y install software-properties-common
 RUN useradd -ms /bin/bash test-user
