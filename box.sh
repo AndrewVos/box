@@ -39,7 +39,18 @@ function check () {
 
 function section () {
   local LABEL=$1
-  echo "$SECTION_PREFIX[$LABEL]"
+  local COLOUR_END='\033[0m'
+  local MAGENTA='\033[0;35m'
+  printf "%s[" "$SECTION_PREFIX"
+  if [[ -t 1 ]]; then
+    printf "%b" "$MAGENTA"
+  fi
+  printf "%s" "$LABEL"
+  if [[ -t 1 ]]; then
+    printf "%b" "$COLOUR_END"
+  fi
+  printf "]\n"
+
   SECTION_PREFIX="  $SECTION_PREFIX"
 }
 
