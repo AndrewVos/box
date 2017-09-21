@@ -442,6 +442,7 @@ function print-box-status () {
     local RED='\033[0;31m'
     local GREEN='\033[0;32m'
     local YELLOW='\033[0;33m'
+    local BLUE='\033[0;34m'
 
     if [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
       local COLOUR=$RED
@@ -453,7 +454,7 @@ function print-box-status () {
       local COLOUR=$RED
     fi
 
-    printf "%s%s %s -> %b%s%b\n" "$SECTION_PREFIX" "$TYPE" "$LABEL" "$COLOUR" "$BOX_STATUS" "$COLOUR_END"
+    printf "%s%b%s%b %s -> %b%s%b\n" "$SECTION_PREFIX" "$BLUE" "$TYPE" "$COLOUR_END" "$LABEL" "$COLOUR" "$BOX_STATUS" "$COLOUR_END"
   else
     echo "$SECTION_PREFIX$TYPE $LABEL -> $BOX_STATUS"
   fi
