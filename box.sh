@@ -421,11 +421,13 @@ function satisfy-github () {
 
 function check-dconf () {
   local DCONF_PATH=$1
-  local DCONF_VALUE=$2
-  local CURRENT_VALUE
-  CURRENT_VALUE=$(dconf read "$DCONF_PATH" | sed "s/^'//" | sed "s/'$//")
+  local DCONF_KEY=$2
+  local DCONF_VALUE=$3
 
-  if [[ "$CURRENT_VALUE" = "$DCONF_VALUE" ]]; then
+  local CURRENT_VALUE
+  CURRENT_VALUE=$(gsettings get "$DCONF_PATH" "$DCONF_KEY" 2> /dev/null || :)
+
+  if [[ "$CURRENT_VALUE" = "$DCONF_VALUE" ]] || [[ "$CURRENT_VALUE" = "'$DCONF_VALUE'" ]]; then
     BOX_STATUS=$BOX_STATUS_LATEST
   else
     BOX_STATUS=$BOX_STATUS_MISSING
@@ -434,11 +436,12 @@ function check-dconf () {
 
 function satisfy-dconf () {
   local DCONF_PATH=$1
-  local DCONF_VALUE=$2
+  local DCONF_KEY=$2
+  local DCONF_VALUE=$3
 
   if [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
     BOX_ACTION=$BOX_ACTION_INSTALL
-    dconf write "$DCONF_PATH" "\"$DCONF_VALUE\""
+    gsettings set "$DCONF_PATH" "$DCONF_KEY" "$DCONF_VALUE"
   else
     BOX_ACTION=$BOX_ACTION_NONE
   fi

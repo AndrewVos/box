@@ -139,7 +139,7 @@ satisfy symlink "$HOME/dotfiles/vim/.vimrc" "$HOME/.vimrc"
 ### Dconf settings
 
 ```bash
-satisfy dconf "/org/gnome/settings-daemon/plugins/media-keys/area-screenshot-clip" "<Shift><Super>s"
+satisfy dconf "org.gnome.settings-daemon.plugins.media-keys.area-screenshot-clip" "<Shift><Super>s"
 ```
 
 ### File lines
