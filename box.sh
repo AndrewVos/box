@@ -228,7 +228,7 @@ function check-file-line () {
   local FULL_LINE="$LINE # $COMMENT"
 
   if [[ -f "$FILE_PATH" ]]; then
-    if grep "$FULL_LINE" "$FILE_PATH" > /dev/null; then
+    if grep --fixed-strings "$FULL_LINE" "$FILE_PATH" > /dev/null; then
       BOX_STATUS=$BOX_STATUS_LATEST
     else
       BOX_STATUS=$BOX_STATUS_MISSING
