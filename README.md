@@ -2,9 +2,6 @@
 
 Manage your machine configuration in a simple bash DSL.
 
-WARNING: This is very much a work in progress.
-It will be fairly stable but be warned, things may change.
-
 Contributions or bug reports will be very much appreciated!
 
 Take a look at my personal dev machine setup [here](https://github.com/AndrewVos/box-vos).
