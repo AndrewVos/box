@@ -420,9 +420,10 @@ function satisfy-github () {
 }
 
 function check-dconf () {
-  local DCONF_PATH=$1
-  local DCONF_KEY=$2
-  local DCONF_VALUE=$3
+  local LABEL=$1
+  local DCONF_PATH=$2
+  local DCONF_KEY=$3
+  local DCONF_VALUE=$4
 
   local CURRENT_VALUE
   CURRENT_VALUE=$(gsettings get "$DCONF_PATH" "$DCONF_KEY" 2> /dev/null || :)
@@ -435,9 +436,10 @@ function check-dconf () {
 }
 
 function satisfy-dconf () {
-  local DCONF_PATH=$1
-  local DCONF_KEY=$2
-  local DCONF_VALUE=$3
+  local LABEL=$1
+  local DCONF_PATH=$2
+  local DCONF_KEY=$3
+  local DCONF_VALUE=$4
 
   if [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
     BOX_ACTION=$BOX_ACTION_INSTALL
