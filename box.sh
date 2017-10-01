@@ -12,8 +12,9 @@ BOX_STATUS_OUTDATED="outdated"
 BOX_STATUS_LATEST="latest"
 BOX_STATUS_MISMATCH="mismatch"
 
-INSTALL_CACHE=$(mktemp)
-UPGRADE_CACHE=$(mktemp)
+APT_CACHE_UP_TO_DATE="false"
+APT_INSTALL_CACHE=$(mktemp)
+APT_UPGRADE_CACHE=$(mktemp)
 
 SECTION_PREFIX=''
 
@@ -113,28 +114,22 @@ function execute-function () {
   cd "$OLDPWD"
 }
 
-function update-apt-install-cache () {
-  dpkg --get-selections | grep 'install$' | cut -f 1 > "$INSTALL_CACHE"
-}
-
-function update-apt-upgrade-cache () {
-  apt-get -s upgrade | grep '^Inst' | cut -d ' ' -f 2 > "$UPGRADE_CACHE"
+function check-if-apt-cache-needs-update () {
+  if [[ ! "$APT_CACHE_UP_TO_DATE" = "true" ]]; then
+    dpkg --get-selections | grep 'install$' | cut -f 1 > "$APT_INSTALL_CACHE"
+    apt-get -s upgrade | grep '^Inst' | cut -d ' ' -f 2 > "$APT_UPGRADE_CACHE"
+    APT_CACHE_UP_TO_DATE="true"
+  fi
 }
 
 function check-apt () {
   local PACKAGE=$1
 
-  if [[ ! -s "$INSTALL_CACHE" ]]; then
-    update-apt-install-cache
-  fi
+  check-if-apt-cache-needs-update
 
-  if [[ ! -s "$UPGRADE_CACHE" ]]; then
-    update-apt-upgrade-cache
-  fi
-
-  if ! grep -E "^$PACKAGE$" < "$INSTALL_CACHE" > /dev/null; then
+  if ! grep -E "^$PACKAGE$" < "$APT_INSTALL_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
-  elif grep -E "^$PACKAGE$" < "$UPGRADE_CACHE" > /dev/null; then
+  elif grep -E "^$PACKAGE$" < "$APT_UPGRADE_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_OUTDATED
   else
     BOX_STATUS=$BOX_STATUS_LATEST
@@ -148,8 +143,7 @@ function satisfy-apt () {
     BOX_ACTION=$BOX_ACTION_NONE
   else
     sudo apt-get -y install "$PACKAGE"
-    update-apt-install-cache
-    update-apt-upgrade-cache
+    APT_CACHE_UP_TO_DATE="false"
 
     if [[ "$BOX_STATUS" = "$BOX_STATUS_OUTDATED" ]]; then
       BOX_ACTION=$BOX_ACTION_UPGRADE
@@ -163,15 +157,9 @@ function check-deb () {
   local PACKAGE=$1
   local URL=$2
 
-  if [[ ! -s "$INSTALL_CACHE" ]]; then
-    update-apt-install-cache
-  fi
+  check-if-apt-cache-needs-update
 
-  if [[ ! -s "$UPGRADE_CACHE" ]]; then
-    update-apt-upgrade-cache
-  fi
-
-  if ! grep -E "^$PACKAGE$" < "$INSTALL_CACHE" > /dev/null; then
+  if ! grep -E "^$PACKAGE$" < "$APT_INSTALL_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
   else
     BOX_STATUS=$BOX_STATUS_LATEST
@@ -215,8 +203,7 @@ function satisfy-apt-ppa () {
   else
     sudo add-apt-repository -y "$PPA"
     sudo apt-get -y update
-    update-apt-install-cache
-    update-apt-upgrade-cache
+    APT_CACHE_UP_TO_DATE="false"
     BOX_ACTION=$BOX_ACTION_INSTALL
   fi
 }
