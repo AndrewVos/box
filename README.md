@@ -1,10 +1,8 @@
 # box
 
-Manage your machine configuration in a simple bash DSL.
+Manage your machine configuration in a simple bash script.
 
-Contributions or bug reports will be very much appreciated!
-
-Take a look at my personal dev machine setup [here](https://github.com/AndrewVos/box-vos).
+Quickly bootstrap your personal development machines with box.
 
 - [box](#box)
   - [Demonstration](#demonstration)
@@ -27,6 +25,8 @@ Take a look at my personal dev machine setup [here](https://github.com/AndrewVos
   - [Sections](#sections)
 
 ## Demonstration
+
+The source for this demonstration is [here](https://github.com/AndrewVos/box-vos).
 
 ![demonstration](demonstration.gif)
 
