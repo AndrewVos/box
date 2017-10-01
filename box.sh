@@ -114,11 +114,11 @@ function execute-function () {
 }
 
 function update-apt-install-cache () {
-  dpkg --get-selections > "$INSTALL_CACHE"
+  dpkg --get-selections | grep 'install$' | cut -f 1 > "$INSTALL_CACHE"
 }
 
 function update-apt-upgrade-cache () {
-  apt-get -s upgrade > "$UPGRADE_CACHE"
+  apt-get -s upgrade | grep '^Inst' | cut -d ' ' -f 2 > "$UPGRADE_CACHE"
 }
 
 function check-apt () {
@@ -132,9 +132,9 @@ function check-apt () {
     update-apt-upgrade-cache
   fi
 
-  if ! grep -E "^$PACKAGE\\s+install$" < "$INSTALL_CACHE" > /dev/null; then
+  if ! grep -E "^$PACKAGE$" < "$INSTALL_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
-  elif grep -E '^Inst ' < "$UPGRADE_CACHE" | cut -d ' ' -f 2 | grep -E "^$PACKAGE" > /dev/null; then
+  elif grep -E "^$PACKAGE$" < "$UPGRADE_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_OUTDATED
   else
     BOX_STATUS=$BOX_STATUS_LATEST
@@ -171,7 +171,7 @@ function check-deb () {
     update-apt-upgrade-cache
   fi
 
-  if ! grep -E "^$PACKAGE\\s+install$" < "$INSTALL_CACHE" > /dev/null; then
+  if ! grep -E "^$PACKAGE$" < "$INSTALL_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
   else
     BOX_STATUS=$BOX_STATUS_LATEST
