@@ -127,9 +127,9 @@ function check-apt () {
 
   check-if-apt-cache-needs-update
 
-  if ! grep -E "^$PACKAGE$" < "$APT_INSTALL_CACHE" > /dev/null; then
+  if ! grep --fixed-strings "$PACKAGE" < "$APT_INSTALL_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
-  elif grep -E "^$PACKAGE$" < "$APT_UPGRADE_CACHE" > /dev/null; then
+  elif grep --fixed-strings "$PACKAGE" < "$APT_UPGRADE_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_OUTDATED
   else
     BOX_STATUS=$BOX_STATUS_LATEST
