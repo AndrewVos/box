@@ -61,7 +61,10 @@ To execute some code before or after installing a package, use [Tasks](#tasks).
 
 For [file](#files) and [executable](#executables) tasks, box will execute a
 custom function which must do the install.
-You must write this function and it will be named `install-NAME`.
+You must write this function and it must be named `install-NAME`.
+
+Whenever box executes an install- function it will cd into a directory
+inside /tmp, so feel free to have at it with the file system.
 
 ## Package types
 
