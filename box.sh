@@ -117,7 +117,7 @@ function execute-function () {
 function check-if-apt-cache-needs-update () {
   if [[ ! "$APT_CACHE_UP_TO_DATE" = "true" ]]; then
     dpkg --get-selections | grep 'install$' | cut -f 1 > "$APT_INSTALL_CACHE"
-    apt-get -s upgrade | grep '^Inst' || true | cut -d ' ' -f 2 > "$APT_UPGRADE_CACHE"
+    apt-get -s upgrade | grep '^Inst' | cut -d ' ' -f 2 > "$APT_UPGRADE_CACHE"
     APT_CACHE_UP_TO_DATE="true"
   fi
 }
