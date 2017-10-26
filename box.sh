@@ -162,7 +162,7 @@ function check-deb () {
 
   check-if-apt-cache-needs-update
 
-  if ! grep -E "^$PACKAGE$" < "$APT_INSTALL_CACHE" > /dev/null; then
+  if ! grep --line-regexp --fixed-strings "$PACKAGE" < "$APT_INSTALL_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
   else
     BOX_STATUS=$BOX_STATUS_LATEST
