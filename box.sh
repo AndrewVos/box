@@ -325,7 +325,11 @@ function satisfy-symlink () {
   if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
   elif [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
-    ln -s "$TARGET" "$NAME"
+    if [ -w "$NAME" ]; then
+      ln -s "$TARGET" "$NAME"
+    else
+      sudo ln -s "$TARGET" "$NAME"
+    fi
     BOX_ACTION=$BOX_ACTION_INSTALL
   elif [[ "$BOX_STATUS" = "$BOX_STATUS_MISMATCH" ]]; then
     echo "Couldn't create symlink $NAME, because it already exists"
