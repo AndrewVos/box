@@ -325,7 +325,7 @@ function satisfy-symlink () {
   if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
   elif [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
-    if [ -w "$NAME" ]; then
+    if [[ -w $(dirname "$NAME") ]]; then
       ln -s "$TARGET" "$NAME"
     else
       sudo ln -s "$TARGET" "$NAME"
