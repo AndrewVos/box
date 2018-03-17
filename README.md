@@ -11,6 +11,8 @@ Quickly bootstrap your personal development machines with box.
   - [Package types](#package-types)
     - [APT packages](#apt-packages)
     - [APT PPAs](#apt-ppas)
+    - [Pacman packages](#pacman-packages)
+    - [Yaourt packages](#yaourt-packages)
     - [Golang](#golang)
     - [Golang packages](#golang-packages)
     - [Github repositories](#github-repositories)
@@ -80,6 +82,36 @@ satisfy apt "vim"
 ```bash
 satisfy apt-ppa "ppa:peek-developers/stable"
 satisfy apt "peek"
+```
+
+### Pacman packages
+
+```bash
+satisfy pacman "i3"
+satisfy pacman "postgresql"
+```
+
+### Yaourt packages
+
+Install `yaourt`:
+
+```bash
+function install-yaourt () {
+  git clone https://aur.archlinux.org/package-query.git
+  cd package-query
+  makepkg -si
+  cd ..
+  git clone https://aur.archlinux.org/yaourt.git
+  cd yaourt
+  makepkg -si
+  cd ..
+}
+satisfy executable "yaourt"
+```
+
+```bash
+satisfy yaourt "google-chrome"
+satisfy yaourt "spotify"
 ```
 
 ### Debian packages

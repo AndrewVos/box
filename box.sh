@@ -125,6 +125,62 @@ function check-if-apt-cache-needs-update () {
   fi
 }
 
+function check-yaourt () {
+  local PACKAGE=$1
+
+  if ! yaourt -Qi "$PACKAGE" &> /dev/null; then
+    BOX_STATUS=$BOX_STATUS_MISSING
+  elif yaourt -Qu "$PACKAGE" &> /dev/null; then
+    BOX_STATUS=$BOX_STATUS_OUTDATED
+  else
+    BOX_STATUS=$BOX_STATUS_LATEST
+  fi
+}
+
+function satisfy-yaourt () {
+  local PACKAGE=$1
+
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
+    BOX_ACTION=$BOX_ACTION_NONE
+  else
+    yaourt --noconfirm -Sy "$PACKAGE"
+
+    if [[ "$BOX_STATUS" = "$BOX_STATUS_OUTDATED" ]]; then
+      BOX_ACTION=$BOX_ACTION_UPGRADE
+    elif [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
+      BOX_ACTION=$BOX_ACTION_INSTALL
+    fi
+  fi
+}
+
+function check-pacman () {
+  local PACKAGE=$1
+
+  if ! pacman -Qi "$PACKAGE" &> /dev/null; then
+    BOX_STATUS=$BOX_STATUS_MISSING
+  elif pacman -Qu "$PACKAGE" &> /dev/null; then
+    BOX_STATUS=$BOX_STATUS_OUTDATED
+  else
+    BOX_STATUS=$BOX_STATUS_LATEST
+  fi
+}
+
+function satisfy-pacman () {
+  local PACKAGE=$1
+
+  if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
+    BOX_ACTION=$BOX_ACTION_NONE
+  else
+    sudo pacman --noconfirm -Sy "$PACKAGE"
+
+    if [[ "$BOX_STATUS" = "$BOX_STATUS_OUTDATED" ]]; then
+      BOX_ACTION=$BOX_ACTION_UPGRADE
+    elif [[ "$BOX_STATUS" = "$BOX_STATUS_MISSING" ]]; then
+      BOX_ACTION=$BOX_ACTION_INSTALL
+    fi
+  fi
+}
+
 function check-apt () {
   local PACKAGE=$1
 
