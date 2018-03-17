@@ -28,7 +28,7 @@ Quickly bootstrap your personal development machines with box.
 
 ## Demonstration
 
-The source for this demonstration is [here](https://github.com/AndrewVos/box-vos).
+The source for this demonstration is [here](https://github.com/AndrewVos/dotfiles).
 
 ![demonstration](demonstration.gif)
 
