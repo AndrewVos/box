@@ -293,7 +293,11 @@ function satisfy-file-line () {
   if [[ "$BOX_STATUS" = "$BOX_STATUS_LATEST" ]]; then
     BOX_ACTION=$BOX_ACTION_NONE
   else
-    echo "$FULL_LINE" >> "$FILE_PATH"
+    if [[ -w "$FILE_PATH" ]]; then
+      echo "$FULL_LINE" >> "$FILE_PATH"
+    else
+      echo "$FULL_LINE" | sudo tee -a "$FILE_PATH"
+    fi
     BOX_ACTION=$BOX_ACTION_INSTALL
   fi
 }
