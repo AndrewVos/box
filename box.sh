@@ -16,6 +16,9 @@ APT_CACHE_UP_TO_DATE="false"
 APT_INSTALL_CACHE=$(mktemp)
 APT_UPGRADE_CACHE=$(mktemp)
 
+PACMAN_CACHE_UP_TO_DATE="false"
+PACMAN_INSTALL_CACHE=$(mktemp)
+
 SECTION_PREFIX=''
 
 function satisfy () {
@@ -114,8 +117,15 @@ function execute-function () {
   cd "$OLDPWD"
 }
 
+function check-if-pacman-cache-needs-update () {
+  if [[ "$PACMAN_CACHE_UP_TO_DATE" = "false" ]]; then
+    pacman -Q | cut -d ' ' -f 1 > "$PACMAN_INSTALL_CACHE"
+    PACMAN_CACHE_UP_TO_DATE="true"
+  fi
+}
+
 function check-if-apt-cache-needs-update () {
-  if [[ ! "$APT_CACHE_UP_TO_DATE" = "true" ]]; then
+  if [[ "$APT_CACHE_UP_TO_DATE" = "false" ]]; then
     dpkg-query -W -f='${Package}\n' > "$APT_INSTALL_CACHE"
 
     set +e
@@ -128,10 +138,10 @@ function check-if-apt-cache-needs-update () {
 function check-yaourt () {
   local PACKAGE=$1
 
-  if ! yaourt -Qi "$PACKAGE" &> /dev/null; then
+  check-if-pacman-cache-needs-update
+
+  if ! grep --line-regexp --fixed-strings "$PACKAGE" < "$PACMAN_INSTALL_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
-  elif yaourt -Qu "$PACKAGE" &> /dev/null; then
-    BOX_STATUS=$BOX_STATUS_OUTDATED
   else
     BOX_STATUS=$BOX_STATUS_LATEST
   fi
@@ -156,10 +166,10 @@ function satisfy-yaourt () {
 function check-pacman () {
   local PACKAGE=$1
 
-  if ! pacman -Qi "$PACKAGE" &> /dev/null; then
+  check-if-pacman-cache-needs-update
+
+  if ! grep --line-regexp --fixed-strings "$PACKAGE" < "$PACMAN_INSTALL_CACHE" > /dev/null; then
     BOX_STATUS=$BOX_STATUS_MISSING
-  elif pacman -Qu "$PACKAGE" &> /dev/null; then
-    BOX_STATUS=$BOX_STATUS_OUTDATED
   else
     BOX_STATUS=$BOX_STATUS_LATEST
   fi
